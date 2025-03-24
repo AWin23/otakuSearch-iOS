@@ -150,7 +150,7 @@ class APIService {
     }
     
     
-    // Function that calls the Current Popular Anime '/anime/top100'
+    // Function that calls the All Time Popular Anime '/anime/top100'
     func fetchAllTimePopularAnime(completion: @escaping (Result<[Anime], Error>) -> Void) {
         // Step 1: Ensure that the URL for the API endpoint is valid.
         guard let url = URL(string: "http://localhost:8080/anime/all-time-popular") else { return }
@@ -189,6 +189,53 @@ class APIService {
                 
                 // Step 8: Call the completion handler with the fetched anime data wrapped in a success result.
                 completion(.success(allTimePopularAnime))
+            } catch {
+                print("No data received.") // If no data is received, print this
+                completion(.failure(error))
+            }
+        }.resume() // Finally, resume the task to start the network request.
+    }
+    
+    
+    // Function that calls the Top 100 All time Anime '/anime/top100'
+    func fetchTop100Anime(completion: @escaping (Result<[Anime], Error>) -> Void) {
+        // Step 1: Ensure that the URL for the API endpoint is valid.
+        guard let url = URL(string: "http://localhost:8080/anime/top100") else { return }
+        
+        print("Fetching top 100 popular anime from: \(url)") // Add this to confirm the request is made
+
+        // Step 2: Create a URLRequest object to configure the request details, like HTTP method.
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET" // Set the HTTP method to GET because we are fetching data.
+        
+        // Step 3: Start a network request using URLSession's dataTask method to perform the HTTP request.
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                // Step 4: Handle any errors that occur during the network request.
+                print("Error occurred: \(error.localizedDescription)") // Add this to print any error
+                completion(.failure(error))
+                return
+            }
+            
+            // Step 5: Ensure that data has been received from the server.
+            guard let data = data else {
+                print("No data received.") // If no data is received, print this
+                return
+            }
+            
+            // Step 6: Try to decode the received data into our defined structure.
+            do {
+                // Use a JSONDecoder to decode the raw JSON data into the UpcominggAnimeResponse structure.
+                // Decode the JSON Response to UpcomingAnimeResponse
+                let decoder = JSONDecoder()
+                let responseObject = try decoder.decode(Top100AnimeResponse.self, from: data)
+                
+                // Extract the media array directly from the response and return it
+                // Step 7: Extract the list of Current Popular anime from the decoded response object.
+                let top100Anime = responseObject.data.Page.media
+                
+                // Step 8: Call the completion handler with the fetched anime data wrapped in a success result.
+                completion(.success(top100Anime))
             } catch {
                 print("No data received.") // If no data is received, print this
                 completion(.failure(error))

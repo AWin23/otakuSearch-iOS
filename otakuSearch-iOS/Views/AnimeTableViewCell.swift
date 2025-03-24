@@ -34,7 +34,9 @@ class AnimeTableViewCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         collectionView.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0) // 1B1919 color
         
         collectionView.showsHorizontalScrollIndicator = false
-        collectionView.backgroundColor = .clear
+        
+        //collectionView.backgroundColor = .clear UNCOMMENT THIS FOR DEBUGGING
+        
         collectionView.register(AnimeCollectionViewCell.self, forCellWithReuseIdentifier: AnimeCollectionViewCell.identifier)
         
         contentView.addSubview(collectionView)

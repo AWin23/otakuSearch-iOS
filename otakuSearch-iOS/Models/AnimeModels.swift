@@ -61,10 +61,17 @@ struct CurrentPopularAnimeResponse: Codable {
     let data: PageData
 }
 
-// MARK: - All-TIme Popular Anime Models
+// MARK: - All-Time Popular Anime Models
 
 /// This struct represents the top-level response structure for fetching popular all-time anime data.
 struct AllTimePopularAnimeResponse: Codable {
+    let data: PageData
+}
+
+// MARK: - Top 100 Popular Anime Models
+
+/// This struct represents the top-level response structure for fetching popular all-time anime data.
+struct Top100AnimeResponse: Codable {
     let data: PageData
 }
 

@@ -33,6 +33,11 @@ class DiscoveryController: UIViewController {
         viewModel.fetchAllTimePopularAnime {
             print("Current All Time Popular Anime has been fetched and updated.") // Confirm when data is fetched
         }
+        
+        // Trigger the "Top 100 Popular" anime fetch when the view loads
+        viewModel.fetchTop100Anime {
+            print("Top 100 Popular Anime has been fetched and updated.") // Confirm when data is fetched
+        }
     }
 }
 

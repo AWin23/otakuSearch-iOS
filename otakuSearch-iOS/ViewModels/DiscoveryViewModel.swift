@@ -14,6 +14,7 @@ class DiscoveryViewModel {
     var upcomingAnime: [Anime] = [] // Upcoming anime list
     var currentPopularAnime: [Anime] = [] // Popular anime list
     var allTimePopularAnime: [Anime] = [] // All-time popular anime list
+    var top100Anime: [Anime] = [] // Top 100 anime list
     
     /// Fetches trending anime from the API and updates the `trendingAnime` array.
     /// Calls the completion handler after data is retrieved and updated.
@@ -103,6 +104,29 @@ class DiscoveryViewModel {
                 
             case .failure(let error):
                 print("[ERROR] Failed to fetch All TIme popular anime: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    /// Fetches Top 100 anime from the API and updates the `Top100Anime` array.
+    /// Calls the completion handler after data is retrieved and updated.
+    func fetchTop100Anime(completion: @escaping () -> Void) {
+        print("[DEBUG] Fetching Top 100 Popular anime from API...") // Debugging fetch initiation
+        
+        APIService.shared.fetchTop100Anime { result in
+            switch result {
+            case .success(let anime):
+                print("[DEBUG] Successfully fetched Top 100 Popular anime: \(anime.count) items") // Debugging fetched count
+                
+                // Store fetched data in the AllTimePopularAnime array
+                self.top100Anime = anime
+                
+                DispatchQueue.main.async {
+                    completion() // Notify UI to refresh data
+                }
+                
+            case .failure(let error):
+                print("[ERROR] Failed to fetch Top 100 popular anime: \(error.localizedDescription)")
             }
         }
     }

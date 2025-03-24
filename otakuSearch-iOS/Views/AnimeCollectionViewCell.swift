@@ -25,7 +25,7 @@ class AnimeCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
-        label.textColor = .black
+        label.textColor = .white
         label.font = UIFont.systemFont(ofSize: 12, weight: .bold)
         label.numberOfLines = 2
         label.adjustsFontSizeToFitWidth = true
@@ -75,8 +75,6 @@ class AnimeCollectionViewCell: UICollectionViewCell {
     }
     
     func configure(with anime: Anime) {
-        //print("Anime Data: \(anime)")
-        print("Title: \(anime.title.english ?? anime.title.romaji ?? "No Title")")
         titleLabel.text = anime.title.english ?? anime.title.romaji
         if let imageUrl = anime.coverImage.medium {
             imageView.sd_setImage(with: URL(string: imageUrl), placeholderImage: UIImage(named: "placeholder"))

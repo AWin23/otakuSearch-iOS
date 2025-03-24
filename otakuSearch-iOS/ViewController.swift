@@ -11,11 +11,6 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
     let searchController = UISearchController() // Declaration of UISearchController component
     let viewModel = DiscoveryViewModel() // Declare the viewModel here to call the fetching method
     
-    // Arrays to store the fetched anime
-    var trendingAnime: [Anime] = []
-    var upcomingAnime: [Anime] = []
-    var currentPopularAnime: [Anime] = []
-    
     var table: UITableView!
 
     override func viewDidLoad() {
@@ -56,7 +51,7 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         table.delegate = self
         table.dataSource = self
         table.register(AnimeTableViewCell.self, forCellReuseIdentifier: AnimeTableViewCell.identifier)
-        table.backgroundColor = .clear
+        table.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0) // 1B1919 color
 
 
         // Add the table view to the view hierarchy
@@ -90,6 +85,13 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
                 self.table.reloadData()
             }
         }
+        
+        viewModel.fetchTop100Anime {
+            //print("Fetch completed, top 100 popular anime count: \(self.viewModel.fetchTop100Anime.count)")
+            DispatchQueue.main.async {
+                self.table.reloadData()
+            }
+        }
     }
 
     // MARK: - Custom Positioning for Search Bar
@@ -110,27 +112,54 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
     // MARK: - UITableViewDataSource Methods
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 4 // One section for each category (Trending, Upcoming, Current Popular, All-Time Popular)
+        return 5 // One section for each category (Trending, Upcoming, Current Popular, All-Time Popular)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 1 // Only one row per section, but it will hold a collection view
     }
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    // the Header's in each of the grids
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        
+        // Optional: Set background color of the Title Cell if needed
+        headerView.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0)
+        
+        let titleLabel = UILabel()
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Set title text based on section
         switch section {
         case 0:
-            return "Trending Anime"
+            titleLabel.text = "Trending Anime"
         case 1:
-            return "Upcoming Anime"
+            titleLabel.text = "Upcoming Anime"                   
         case 2:
-            return "Current Popular Anime"
+            titleLabel.text = "Current Popular Anime"
         case 3:
-            return "All-Time Popular Anime"
+            titleLabel.text = "All-Time Popular Anime"
+        case 4:
+            titleLabel.text = "Top 100 Anime"
         default:
-            return ""
+            titleLabel.text = ""
         }
+        
+        // Set the text color using RGB values instead of hex
+        titleLabel.textColor = UIColor(red: 239/255.0, green: 236/255.0, blue: 236/255.0, alpha: 1.0)
+        titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        
+        // Add the titleLabel to the header view
+        headerView.addSubview(titleLabel)
+        
+        // Add constraints to keep the label aligned to the left with padding
+        NSLayoutConstraint.activate([
+            titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16), // Left padding of 16
+            titleLabel.centerYAnchor.constraint(equalTo: headerView.centerYAnchor) // Keep it vertically centered
+        ])
+        return headerView
     }
+
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "AnimeTableViewCell", for: indexPath) as? AnimeTableViewCell else {
@@ -148,6 +177,8 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
             animeList = viewModel.currentPopularAnime // Fetch Current popular anime from ViewModel
         case 3:
             animeList = viewModel.allTimePopularAnime // Fetch All-Time anime from ViewModel
+        case 4:
+            animeList = viewModel.top100Anime // Fetch Top 100 anime from ViewModel
         default:
             animeList = []
         }

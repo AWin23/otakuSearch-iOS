@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BB226E682D8BCC3D008DF30F /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = BB226E672D8BCC3D008DF30F /* SDWebImage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BBFA214C2D83F69A00AB33CB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB226E682D8BCC3D008DF30F /* SDWebImage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = "otakuSearch-iOS";
 			packageProductDependencies = (
+				BB226E672D8BCC3D008DF30F /* SDWebImage */,
 			);
 			productName = "otakuSearch-iOS";
 			productReference = BBFA21322D83F69800AB33CB /* otakuSearch-iOS.app */;
@@ -208,6 +214,9 @@
 			);
 			mainGroup = BBFA21292D83F69800AB33CB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BB226E662D8BCC3D008DF30F /* XCRemoteSwiftPackageReference "SDWebImage" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BBFA21332D83F69800AB33CB /* Products */;
 			projectDirPath = "";
@@ -569,6 +578,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BB226E662D8BCC3D008DF30F /* XCRemoteSwiftPackageReference "SDWebImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImage";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.21.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BB226E672D8BCC3D008DF30F /* SDWebImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB226E662D8BCC3D008DF30F /* XCRemoteSwiftPackageReference "SDWebImage" */;
+			productName = SDWebImage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BBFA212A2D83F69800AB33CB /* Project object */;
 }

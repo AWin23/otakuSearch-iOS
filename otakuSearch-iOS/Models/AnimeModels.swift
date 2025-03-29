@@ -25,7 +25,7 @@ struct Anime: Codable {
 }
 
 struct AnimeCoverImage: Codable {
-    let medium: String?  // Using medium resolution for grid layout
+    let large: String?  // Using medium resolution for grid layout
 }
 
 /// This struct represents the `Page` object which contains a list of anime items (`media`).

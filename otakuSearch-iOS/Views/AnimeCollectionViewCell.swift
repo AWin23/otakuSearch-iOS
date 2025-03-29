@@ -20,7 +20,7 @@ class AnimeCollectionViewCell: UICollectionViewCell {
         return iv
     }()
     
-    // declarators for the Title of the Anime's in each grid
+    // Declare the Title Label for displaying the anime title
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -56,6 +56,9 @@ class AnimeCollectionViewCell: UICollectionViewCell {
             imageView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
             imageView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
             imageView.bottomAnchor.constraint(equalTo: titleLabel.topAnchor, constant: -5),
+            imageView.heightAnchor.constraint(equalToConstant: 70),
+            imageView.widthAnchor.constraint(equalToConstant: 120),
+
             
             titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             titleLabel.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 5),
@@ -74,10 +77,26 @@ class AnimeCollectionViewCell: UICollectionViewCell {
         titleLabel.text = nil
     }
     
+    
+    // Setting up properties for the Anime title 
     func configure(with anime: Anime) {
+        // Set the titleLabel text to the anime's English title if available, otherwise use the Romaji title.
         titleLabel.text = anime.title.english ?? anime.title.romaji
-        if let imageUrl = anime.coverImage.medium {
+        
+        // If the anime has a cover image URL, set the imageView to load that image from the URL.
+        if let imageUrl = anime.coverImage.large {
             imageView.sd_setImage(with: URL(string: imageUrl), placeholderImage: UIImage(named: "placeholder"))
+        }
+    }
+    
+    
+    // Override isSelected to change the background color when tapped
+    override var isSelected: Bool {
+        didSet {
+            // Animate selection effect when tapped
+            UIView.animate(withDuration: 0.2) {
+                self.contentView.backgroundColor = self.isSelected ? UIColor.lightGray.withAlphaComponent(0.3) : .clear
+            }
         }
     }
 }

@@ -59,14 +59,12 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         
         // Fetch anime data
         viewModel.fetchTrendingAnime {
-            print("Fetch completed, trending anime count: \(self.viewModel.trendingAnime.count)")
             DispatchQueue.main.async {
                 self.table.reloadData() // Ensures the data is loaded before configuring the data
             }
         }
         
         viewModel.fetchUpcomingAnime {
-            print("Fetch completed, upcoming anime count: \(self.viewModel.upcomingAnime.count)")
             DispatchQueue.main.async {
                 self.table.reloadData()
             }
@@ -80,14 +78,12 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         }
         
         viewModel.fetchAllTimePopularAnime {
-            print("Fetch completed, all-time popular anime count: \(self.viewModel.allTimePopularAnime.count)")
             DispatchQueue.main.async {
                 self.table.reloadData()
             }
         }
         
         viewModel.fetchTop100Anime {
-            //print("Fetch completed, top 100 popular anime count: \(self.viewModel.fetchTop100Anime.count)")
             DispatchQueue.main.async {
                 self.table.reloadData()
             }
@@ -166,6 +162,10 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
             return UITableViewCell()
         }
         
+        
+        //cell.animeData = animeSection.animeList  // Assign anime data
+        cell.delegate = self  // Set delegate
+        
         // Choose the appropriate anime data based on section
         let animeList: [Anime]
         switch indexPath.section {
@@ -193,6 +193,8 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 220 // Adjust the height based on the size of the collection view
     }
+    
+    
 
     // Handle search bar input
     func updateSearchResults(for searchController: UISearchController) {
@@ -203,3 +205,50 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         print("User is searching for: \(text)")
     }
 }
+
+
+// MARK: - AnimeTableViewCellDelegate
+extension ViewController: AnimeTableViewCellDelegate {
+    
+    func animeTableViewCell(_ cell: AnimeTableViewCell, didSelectAnime anime: Anime) {
+        
+        // Fetch the AnimeDetail for the selected anime
+        fetchAnimeDetail(animeID: anime.id) { animeDetail in
+            
+            // Step 2: Pass the fetched AnimeDetail instance to the detail view controller
+            let detailVC = AnimeDetailViewController(animeID: anime.id, animeDetail: animeDetail)
+            self.navigationController?.pushViewController(detailVC, animated: true)
+        }
+    }
+    
+    // Helper function to fetch AnimeDetail from your API or backend
+    func fetchAnimeDetail(animeID: Int, completion: @escaping (AnimeDetail) -> Void) {
+        let url = URL(string: "http://localhost:8080/anime/\(animeID)")! // Adjust the URL as needed
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                print("❌ Invalid URL: \(url)")
+                return
+            }
+    
+            
+            do {
+                // Decode the fetched data into an AnimeDetail object
+                let decodedResponse = try JSONDecoder().decode(AnimeDetailResponse.self, from: data)
+                
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("📝 JSON Response: \(jsonString)")
+                }
+
+
+                DispatchQueue.main.async {
+                    // Call the completion handler with the AnimeDetail instance
+                    print("✅ Successfully decoded AnimeDetail")
+                    completion(decodedResponse.data.Media)
+                }
+            } catch {
+                print("❌ Error decoding anime details: \(error)")
+            }
+        }.resume()
+    }
+}
+

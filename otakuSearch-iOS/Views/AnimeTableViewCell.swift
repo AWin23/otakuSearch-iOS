@@ -6,9 +6,16 @@
 //
 import UIKit
 
+protocol AnimeTableViewCellDelegate: AnyObject {
+    func animeTableViewCell(_ cell: AnimeTableViewCell, didSelectAnime anime: Anime)
+}
+
 class AnimeTableViewCell: UITableViewCell, UICollectionViewDelegate, UICollectionViewDataSource {
     
     static let identifier = "AnimeTableViewCell"
+    
+    weak var delegate: AnimeTableViewCellDelegate?
+
     
     var collectionView: UICollectionView!
     var animeData: [Anime] = []
@@ -81,5 +88,33 @@ class AnimeTableViewCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         let anime = animeData[indexPath.row]
         cell.configure(with: anime)
         return cell
+    }
+    
+    
+    // MARK: - CollectionView Delegate
+
+    // Handle selection inside the collection view (assuming UICollectionView is used)
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let cell = collectionView.cellForItem(at: indexPath) as? AnimeCollectionViewCell else { return }
+
+        // Brief highlight effect
+        cell.contentView.backgroundColor = UIColor.lightGray.withAlphaComponent(0.5)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            cell.contentView.backgroundColor = .clear
+        }
+
+        // Get the selected Anime
+        let selectedAnime = animeData[indexPath.item]
+        
+        print("Cell selected")
+
+        // Pass it to the delegate
+        delegate?.animeTableViewCell(self, didSelectAnime: selectedAnime)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath) as? AnimeCollectionViewCell
+        cell?.contentView.backgroundColor = .clear
     }
 }

@@ -213,12 +213,11 @@ class AnimeDetailViewController: UIViewController {
 
             do {
                 // Decode the response data into an Anime object.
-                let decodedData = try JSONDecoder().decode(AnimeDetailResponse.self, from: data)
-                
+                let decodedResponse = try JSONDecoder().decode(AnimeDetailResponse.self, from: data)
                 
                 // Update the anime details on the main thread after decoding.
                 DispatchQueue.main.async {
-                    self.animeDetail = decodedData.data.Media // Correctly access the `AnimeDetail`
+                    self.animeDetail = decodedResponse.data.Media // Correctly access the `AnimeDetail`
                     self.title = self.animeDetail.title.english ?? self.animeDetail.title.romaji // Update the navigation bar title
                 }
             } catch {

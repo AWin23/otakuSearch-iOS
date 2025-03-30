@@ -23,6 +23,7 @@ struct AnimeDetail: Codable {
     let title: AnimeTitle  /// Contains titles in different languages.
     let description: String?  /// A textual description of the anime (optional).
     let episodes: Int?  /// Number of episodes (optional, since some anime are ongoing).
+    let status: String /// Status of anime season
     let duration: Int?  /// Duration of each episode in minutes (optional).
     let season: String?  /// The airing season (e.g., "WINTER").
     let favourites: Int?  /// Number of users who marked this anime as a favorite (optional).

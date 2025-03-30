@@ -131,6 +131,63 @@ class AnimeDetailViewController: UIViewController {
         descriptionLabel.numberOfLines = 0
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(descriptionLabel)
+        
+        
+        // Solid Horizontal Line
+        let separatorLine = UIView()
+        separatorLine.backgroundColor = .lightGray // Adjust color as needed
+        separatorLine.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(separatorLine)
+        
+        // LEFT SECTION
+        let leftLabels = [
+            "Series Info",
+            "Season: \(animeDetail.season ?? "Unknown")",
+            "Favorites: \(animeDetail.favourites.map { "\($0)" } ?? "0")",
+            "Romaji: \(animeDetail.title.romaji ?? "N/A")",
+            "English: \(animeDetail.title.english ?? "N/A")"
+        ]
+
+        let leftStackView = UIStackView(arrangedSubviews: leftLabels.map { text in
+            let label = UILabel()
+            label.text = text
+            label.textColor = .white
+            label.font = UIFont.systemFont(ofSize: 14)
+            label.numberOfLines = 1
+            return label
+        })
+        leftStackView.axis = .vertical
+        leftStackView.alignment = .leading
+        leftStackView.spacing = 5
+        leftStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        
+        // RIGHT SECTION
+        let rightLabels = [
+            "Airing: \(animeDetail.status ?? "Unknown")"
+        ]
+
+        let rightStackView = UIStackView(arrangedSubviews: rightLabels.map { text in
+            let label = UILabel()
+            label.text = text
+            label.textColor = .white
+            label.font = UIFont.systemFont(ofSize: 14)
+            label.numberOfLines = 1
+            return label
+        })
+        rightStackView.axis = .vertical
+        rightStackView.alignment = .leading
+        rightStackView.spacing = 5
+        rightStackView.translatesAutoresizingMaskIntoConstraints = false
+
+        //  HORIZONTAL STACK (Holds Left & Right Columns)
+        let bottomStackView = UIStackView(arrangedSubviews: [leftStackView, rightStackView])
+        bottomStackView.axis = .horizontal
+        bottomStackView.distribution = .fillEqually
+        bottomStackView.spacing = 20
+        bottomStackView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(bottomStackView)
+
 
         // Auto Layout Constraints
         NSLayoutConstraint.activate([
@@ -189,7 +246,21 @@ class AnimeDetailViewController: UIViewController {
             descriptionLabel.topAnchor.constraint(equalTo: summaryLabel.bottomAnchor, constant: 10),
             descriptionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             descriptionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            descriptionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
+            descriptionLabel.bottomAnchor.constraint(equalTo: separatorLine.topAnchor, constant: -20),
+
+            // Separator Line
+            separatorLine.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 20),
+            separatorLine.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            separatorLine.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            separatorLine.heightAnchor.constraint(equalToConstant: 1), // Thin line
+            
+            
+            // Bottom Stack View
+            bottomStackView.topAnchor.constraint(equalTo: separatorLine.bottomAnchor, constant: 20),
+            bottomStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            bottomStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            bottomStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
+
         ])
         
         // Fetch additional details about the anime from the backend when the view is loaded.

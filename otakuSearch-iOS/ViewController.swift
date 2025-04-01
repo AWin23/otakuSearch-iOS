@@ -37,9 +37,6 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         searchController.searchResultsUpdater = self
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false  // Keeps it fixed
-        
-        // Manually adjust the position of the search bar
-        positionSearchBarAtStart()
 
         // Center the title of the navigation bar
         let titleLabel = UILabel()
@@ -69,7 +66,6 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         table.dataSource = self
         table.register(AnimeTableViewCell.self, forCellReuseIdentifier: AnimeTableViewCell.identifier)
         table.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0) // 1B1919 color
-
 
         // Add the table view to the view hierarchy
         view.addSubview(table)
@@ -142,26 +138,6 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
                 }
             }
         }
-    }
-
-
-
-    // MARK: - Custom Positioning for Search Bar
-    
-    func positionSearchBarAtStart() {
-        // Use guard let to safely unwrap searchController.searchBar
-        // Check if searchController is nil to prevent the crash
-        guard let searchBar = searchController?.searchBar else {
-            print("Search controller or search bar is nil")
-            return
-        }
-        
-        // Set the frame or adjust constraints for the search bar
-        var searchBarFrame = searchBar.frame
-        searchBarFrame.origin.y = 100  // Change 100 to whatever Y position you want
-        searchBar.frame = searchBarFrame
-        
-        // Optional: Customize other properties of the search bar here (like size)
     }
 
     

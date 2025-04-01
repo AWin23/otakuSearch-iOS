@@ -87,6 +87,7 @@ class AnimeTableViewCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AnimeCollectionViewCell.identifier, for: indexPath) as! AnimeCollectionViewCell
         let anime = animeData[indexPath.row]
         cell.configure(with: anime)
+        print("📦 Cell type: \(type(of: cell))")
         return cell
     }
     

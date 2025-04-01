@@ -8,14 +8,28 @@ import UIKit
 
 class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDelegate, UITableViewDataSource {
     
-    let searchController = UISearchController() // Declaration of UISearchController component
+    var searchResultsController: AnimeSearchResultsViewController! // Declare it as an optional, you’ll initialize it in viewDidLoad
+    
+    var searchController: UISearchController! // Declare the searchController as a class-level property
+
+
     let viewModel = DiscoveryViewModel() // Declare the viewModel here to call the fetching method
+    
+    // Declration of Search debouncer and Search Bar's results
+    var searchTimer: Timer?
+    var searchTableView: UITableView!
     
     var table: UITableView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-    
+        
+        // Initialize the searchResultsController here
+        searchResultsController = AnimeSearchResultsViewController()
+        searchController = UISearchController(searchResultsController: searchResultsController)
+        searchController.searchResultsUpdater = searchResultsController
+        
+        
         // Example of a custom dark color using RGB values
         view.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0)
         
@@ -44,6 +58,9 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
             string: placeholderText,
             attributes: [NSAttributedString.Key.foregroundColor: UIColor(red: 0.88, green: 0.88, blue: 0.88, alpha: 1.0)]
         )
+        
+        // Set input text color to #efecec
+        searchBar.searchTextField.textColor = UIColor(red: 239/255, green: 236/255, blue: 236/255, alpha: 1.0)
 
         
         // Initialize the UITableView programmatically
@@ -88,13 +105,56 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
                 self.table.reloadData()
             }
         }
+        
+        // Set up search controller
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search Anime"
+        navigationItem.searchController = searchController
+        definesPresentationContext = true
     }
+    
+
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let query = searchController.searchBar.text, !query.isEmpty else {
+            print("🔴 Search query is empty or nil.")
+            return
+        }
+
+        print("🔎 User is searching for: \(query)")
+
+        // Cancel previous timer
+        searchTimer?.invalidate()
+
+        // Start new debounced fetch
+        searchTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { _ in
+            self.viewModel.fetchSearchResults(query: query) {
+                DispatchQueue.main.async {
+                    print("🔄 Reloading searchTableView in VIEWCONTROLLER...")
+
+                    // 🔥 This MUST be inside the callback AFTER results are updated
+                    if let searchVC = self.searchController.searchResultsController as? AnimeSearchResultsViewController {
+                        searchVC.searchedAnimeResults = self.viewModel.searchedAnimeResults
+                        print("✅ Passed \(self.viewModel.searchedAnimeResults.count) anime to searchVC")
+                        searchVC.searchTableView.reloadData()
+                    }
+                }
+            }
+        }
+    }
+
+
 
     // MARK: - Custom Positioning for Search Bar
     
     func positionSearchBarAtStart() {
-        // Access the search bar directly (no need for guard let since it's not optional)
-        let searchBar = searchController.searchBar
+        // Use guard let to safely unwrap searchController.searchBar
+        // Check if searchController is nil to prevent the crash
+        guard let searchBar = searchController?.searchBar else {
+            print("Search controller or search bar is nil")
+            return
+        }
         
         // Set the frame or adjust constraints for the search bar
         var searchBarFrame = searchBar.frame
@@ -130,7 +190,7 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         case 0:
             titleLabel.text = "Trending Anime"
         case 1:
-            titleLabel.text = "Upcoming Anime"                   
+            titleLabel.text = "Upcoming Anime"
         case 2:
             titleLabel.text = "Current Popular Anime"
         case 3:
@@ -193,17 +253,6 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 220 // Adjust the height based on the size of the collection view
     }
-    
-    
-
-    // Handle search bar input
-    func updateSearchResults(for searchController: UISearchController) {
-        guard let text = searchController.searchBar.text else {
-            return
-        }
-        
-        print("User is searching for: \(text)")
-    }
 }
 
 
@@ -251,4 +300,3 @@ extension ViewController: AnimeTableViewCellDelegate {
         }.resume()
     }
 }
-

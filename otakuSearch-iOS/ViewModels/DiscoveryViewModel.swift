@@ -15,6 +15,7 @@ class DiscoveryViewModel {
     var currentPopularAnime: [Anime] = [] // Popular anime list
     var allTimePopularAnime: [Anime] = [] // All-time popular anime list
     var top100Anime: [Anime] = [] // Top 100 anime list
+    var searchedAnimeResults: [AnimeSearchEntry] = [] // Array to store the searched anime on search bar
     
     /// Fetches trending anime from the API and updates the `trendingAnime` array.
     /// Calls the completion handler after data is retrieved and updated.
@@ -130,6 +131,71 @@ class DiscoveryViewModel {
             }
         }
     }
+    
+    /// Function to fetch search results via Search Bar 
+    func fetchSearchResults(query: String, completion: @escaping () -> Void) {
+        guard let url = URL(string: "http://localhost:8080/anime/search?title=\(query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")") else {
+            print("❌ Invalid search URL")
+            completion() // Ensuring completion is called to prevent UI hangs
+            return
+        }
+
+        print("🌍 Fetching from URL: \(url.absoluteString)") // ✅ Debugging URL being called
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("❌ Error fetching search results: \(error.localizedDescription)")
+                DispatchQueue.main.async { completion() }
+                return
+            }
+
+            // Ensure response is an HTTPURLResponse and check status code
+            if let httpResponse = response as? HTTPURLResponse {
+                print("📡 HTTP Status Code: \(httpResponse.statusCode)")
+                guard (200...299).contains(httpResponse.statusCode) else {
+                    print("❌ Server returned an error: \(httpResponse.statusCode)")
+                    DispatchQueue.main.async { completion() }
+                    return
+                }
+            }
+
+            guard let data = data else {
+                print("❌ No data received from API")
+                DispatchQueue.main.async { completion() }
+                return
+            }
+
+            // ✅ Log the raw JSON response from backend
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("📜 Raw JSON Response: \(jsonString)")
+            }
+
+            do {
+                let decodedResponse = try JSONDecoder().decode(AnimeSearchAPIResponse.self, from: data)
+                let searchResults = decodedResponse.data.Page.media
+                self.searchedAnimeResults = searchResults
+
+
+
+                DispatchQueue.main.async {
+                    print("✅ Updating searchedAnimeResults IN DISCOVERYVIEWMODEL.swift with \(searchResults.count) results")
+                    self.searchedAnimeResults = searchResults
+                    
+                    if self.searchedAnimeResults.isEmpty {
+                        print("⚠️ searchedAnimeResults is empty! No data was parsed.")
+                    } else {
+                        print("🎉 Data successfully updated.")
+                    }
+                    
+                    completion()
+                }
+            } catch {
+                print("❌ Error in DiscoveryViewModel decoding search results: \(error)")
+                DispatchQueue.main.async { completion() }
+            }
+        }.resume()
+    }
+
 }
 
 

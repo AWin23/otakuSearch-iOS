@@ -144,8 +144,6 @@ class AnimeDetailViewController: UIViewController {
             "Series Info",
             "Season: \(animeDetail.season ?? "Unknown")",
             "Favorites: \(animeDetail.favourites.map { "\($0)" } ?? "0")",
-            "Romaji: \(animeDetail.title.romaji ?? "N/A")",
-            "English: \(animeDetail.title.english ?? "N/A")"
         ]
 
         let leftStackView = UIStackView(arrangedSubviews: leftLabels.map { text in
@@ -164,7 +162,9 @@ class AnimeDetailViewController: UIViewController {
         
         // RIGHT SECTION
         let rightLabels = [
-            "Airing: \(animeDetail.status ?? "Unknown")"
+            "Airing: \(animeDetail.status ?? "Unknown")",
+            "Minutes per Episode: \(animeDetail.duration ?? 0)",
+
         ]
 
         let rightStackView = UIStackView(arrangedSubviews: rightLabels.map { text in
@@ -187,6 +187,25 @@ class AnimeDetailViewController: UIViewController {
         bottomStackView.spacing = 20
         bottomStackView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(bottomStackView)
+        
+        // Anime Titles (Romaji & English)
+        let romajiTitleLabel = UILabel()
+        romajiTitleLabel.text = "Romaji: \(animeDetail.title.romaji ?? "N/A")"
+        romajiTitleLabel.textColor = .white
+        romajiTitleLabel.font = UIFont.systemFont(ofSize: 14)
+        romajiTitleLabel.numberOfLines = 0 // Allow for multiple lines
+        romajiTitleLabel.lineBreakMode = .byWordWrapping // Word wrapping
+        romajiTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(romajiTitleLabel)
+
+        let englishTitleLabel = UILabel()
+        englishTitleLabel.text = "English: \(animeDetail.title.english ?? "N/A")"
+        englishTitleLabel.textColor = .white
+        englishTitleLabel.font = UIFont.systemFont(ofSize: 14)
+        englishTitleLabel.numberOfLines = 0 // Allow for multiple lines
+        englishTitleLabel.lineBreakMode = .byWordWrapping // Word wrapping
+        englishTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(englishTitleLabel)
 
 
         // Auto Layout Constraints
@@ -259,7 +278,17 @@ class AnimeDetailViewController: UIViewController {
             bottomStackView.topAnchor.constraint(equalTo: separatorLine.bottomAnchor, constant: 20),
             bottomStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             bottomStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            bottomStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
+            bottomStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
+            
+            
+            // Title for constraints
+            romajiTitleLabel.topAnchor.constraint(equalTo: bottomStackView.bottomAnchor, constant: 30),
+            romajiTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            romajiTitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+
+            englishTitleLabel.topAnchor.constraint(equalTo: romajiTitleLabel.bottomAnchor, constant: 30),
+            englishTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            englishTitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20)
 
         ])
         

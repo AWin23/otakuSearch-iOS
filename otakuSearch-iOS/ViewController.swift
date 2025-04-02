@@ -20,21 +20,27 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
     var searchTableView: UITableView!
     
     var table: UITableView!
+    
+    var wasSearching = false
 
     override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        // Initialize the searchResultsController here
+        // Initialize the searchResultsController
         searchResultsController = AnimeSearchResultsViewController()
-        searchController = UISearchController(searchResultsController: searchResultsController)
-        searchController.searchResultsUpdater = searchResultsController
-        
+
+        // Embed it in a navigation controller
+        let navSearchResultsController = UINavigationController(rootViewController: searchResultsController)
+
+        // Initialize the search controller with the embedded search results controller
+        searchController = UISearchController(searchResultsController: navSearchResultsController)
+
+        // Set the search results updater to the parent (self)
+        searchController.searchResultsUpdater = self
+
         
         // Example of a custom dark color using RGB values
         view.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0)
         
         // Assign the search controller to the navigation bar
-        searchController.searchResultsUpdater = self
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false  // Keeps it fixed
 
@@ -46,15 +52,21 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         titleLabel.sizeToFit()
         navigationItem.titleView = titleLabel  // This centers the title
             
-        // Sets placeholder text for the search bar
+        // Set up the search controller appearance
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        definesPresentationContext = true
+
+        // Configure the search bar appearance (placeholder, text color, etc.)
         let searchBar = searchController.searchBar
         let placeholderText = "Search Anime"
-
-        // Set placeholder with custom color
         searchBar.searchTextField.attributedPlaceholder = NSAttributedString(
             string: placeholderText,
             attributes: [NSAttributedString.Key.foregroundColor: UIColor(red: 0.88, green: 0.88, blue: 0.88, alpha: 1.0)]
         )
+        
+        // cancel button color
+        searchBar.tintColor = UIColor(red: 219/255.0, green: 45/255.0, blue: 105/255.0, alpha: 1.0)
         
         // Set input text color to #efecec
         searchBar.searchTextField.textColor = UIColor(red: 239/255, green: 236/255, blue: 236/255, alpha: 1.0)
@@ -110,8 +122,8 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         definesPresentationContext = true
     }
     
-
-    
+    // updates the search results that the search bar is querying
+    // populates the menu "as you type"
     func updateSearchResults(for searchController: UISearchController) {
         guard let query = searchController.searchBar.text, !query.isEmpty else {
             print("🔴 Search query is empty or nil.")
@@ -130,7 +142,10 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
                     print("🔄 Reloading searchTableView in VIEWCONTROLLER...")
 
                     // 🔥 This MUST be inside the callback AFTER results are updated
-                    if let searchVC = self.searchController.searchResultsController as? AnimeSearchResultsViewController {
+                    if let navVC = self.searchController.searchResultsController as? UINavigationController,
+                       let searchVC = navVC.viewControllers.first as? AnimeSearchResultsViewController {
+
+                        _ = searchVC.view  // This forces viewDidLoad() to run if it hasn’t yet
                         searchVC.searchedAnimeResults = self.viewModel.searchedAnimeResults
                         print("✅ Passed \(self.viewModel.searchedAnimeResults.count) anime to searchVC")
                         searchVC.searchTableView.reloadData()

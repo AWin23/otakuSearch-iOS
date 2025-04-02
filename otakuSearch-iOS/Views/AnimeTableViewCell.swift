@@ -41,9 +41,7 @@ class AnimeTableViewCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         collectionView.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0) // 1B1919 color
         
         collectionView.showsHorizontalScrollIndicator = false
-        
-        //collectionView.backgroundColor = .clear UNCOMMENT THIS FOR DEBUGGING
-        
+                
         collectionView.register(AnimeCollectionViewCell.self, forCellWithReuseIdentifier: AnimeCollectionViewCell.identifier)
         
         contentView.addSubview(collectionView)
@@ -72,7 +70,6 @@ class AnimeTableViewCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         self.animeData = anime
         DispatchQueue.main.async {
             self.collectionView.reloadData()
-            //print("AnimeTableViewCell configured with \(anime.count) items.")
         }
     }
 
@@ -87,7 +84,6 @@ class AnimeTableViewCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AnimeCollectionViewCell.identifier, for: indexPath) as! AnimeCollectionViewCell
         let anime = animeData[indexPath.row]
         cell.configure(with: anime)
-        print("📦 Cell type: \(type(of: cell))")
         return cell
     }
     
@@ -108,8 +104,6 @@ class AnimeTableViewCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         // Get the selected Anime
         let selectedAnime = animeData[indexPath.item]
         
-        print("Cell selected")
-
         // Pass it to the delegate
         delegate?.animeTableViewCell(self, didSelectAnime: selectedAnime)
     }

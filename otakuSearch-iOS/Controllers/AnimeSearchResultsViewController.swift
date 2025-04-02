@@ -70,11 +70,30 @@ class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdatin
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return searchedAnimeResults.count
     }
+    
+    // MARK: - UITableViewDelegate
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedAnime = searchedAnimeResults[indexPath.row]
+
+        if let parentVC = self.presentingViewController as? ViewController {
+            // ✅ DO NOT deactivate searchController here anymore
+            // Let it stay active so the overlay remains
+            
+            // Fetch first, push after
+            fetchAnimeDetail(animeID: selectedAnime.id) { animeDetail in
+                let detailVC = AnimeDetailViewController(animeID: selectedAnime.id, animeDetail: animeDetail)
+                
+                // 👇 Push from parent — search stays alive underneath
+                parentVC.navigationController?.pushViewController(detailVC, animated: true)
+            }
+        }
+
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        print("🤖 Configuring cell for row \(indexPath.row)")
-        
+                
         // Safety check to avoid index out of range
         guard indexPath.row < searchedAnimeResults.count else {
             print("❌ indexPath.row \(indexPath.row) is out of bounds for searchedAnimeResults count \(searchedAnimeResults.count)")
@@ -92,9 +111,7 @@ class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdatin
         
         // Use the title directly since it's a String (no need for "english" or "romaji")
         let title = anime.title.english ?? anime.title.romaji ?? "Unknown Title"
-        
-        print("🎞️ Configuring cell with title: \(title)")
-        
+                
         // Pass the title (a String) to the cell
         let imageURL = anime.coverImage.large
         
@@ -185,7 +202,26 @@ class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdatin
                 DispatchQueue.main.async { completion() }
             }
         }.resume()
-    }    
+    }
+    
+    func fetchAnimeDetail(animeID: Int, completion: @escaping (AnimeDetail) -> Void) {
+        let url = URL(string: "http://localhost:8080/anime/\(animeID)")!
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                print("❌ Invalid URL or network error for: \(url)")
+                return
+            }
+            do {
+                let decodedResponse = try JSONDecoder().decode(AnimeDetailResponse.self, from: data)
+                DispatchQueue.main.async {
+                    print("✅ Successfully decoded AnimeDetail in AnimeSearchResultController")
+                    completion(decodedResponse.data.Media)
+                }
+            } catch {
+                print("❌ Error decoding anime details: \(error)")
+            }
+        }.resume()
+    }
 }
 
 

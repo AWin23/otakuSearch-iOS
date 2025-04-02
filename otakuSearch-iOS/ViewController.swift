@@ -126,7 +126,6 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
     // populates the menu "as you type"
     func updateSearchResults(for searchController: UISearchController) {
         guard let query = searchController.searchBar.text, !query.isEmpty else {
-            print("🔴 Search query is empty or nil.")
             return
         }
 

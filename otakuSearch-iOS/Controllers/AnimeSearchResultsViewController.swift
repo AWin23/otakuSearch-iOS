@@ -36,6 +36,8 @@ class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdatin
         
         view.addSubview(searchTableView)
         
+        additionalSafeAreaInsets.top = -50 // ← shift upward
+        
         
         NSLayoutConstraint.activate([
             searchTableView.topAnchor.constraint(equalTo: view.topAnchor),

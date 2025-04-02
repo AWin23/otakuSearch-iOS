@@ -288,7 +288,9 @@ class AnimeDetailViewController: UIViewController {
 
             englishTitleLabel.topAnchor.constraint(equalTo: romajiTitleLabel.bottomAnchor, constant: 30),
             englishTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            englishTitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20)
+            englishTitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            
+            englishTitleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -30),
 
         ])
         

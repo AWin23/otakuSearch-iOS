@@ -22,8 +22,47 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
     var table: UITableView!
     
     var wasSearching = false
+    
+    @objc func profileTapped() {
+        let email = UserDefaults.standard.string(forKey: "loggedInEmail") ?? "Unknown"
+        let alert = UIAlertController(title: "Logged In", message: "Welcome back, \(email)", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
+
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        // user session is being tracked, check if they are logged in for persistant state.
+        if UserDefaults.standard.bool(forKey: "isLoggedIn") {
+            print("✅ Already logged in as:", UserDefaults.standard.string(forKey: "loggedInEmail") ?? "unknown")
+        } else {
+            print("🔒 Not logged in.")
+        }
+    }
+
 
     override func viewDidLoad() {
+        
+        // check if user is logged in, if so, show a profile icon
+        if UserDefaults.standard.bool(forKey: "isLoggedIn") {
+            // Create a profile button
+            let profileButton = UIButton(type: .custom)
+            profileButton.setImage(UIImage(systemName: "person.circle.fill"), for: .normal) // Use SF Symbol
+            profileButton.tintColor = UIColor(red: 219/255.0, green: 45/255.0, blue: 105/255.0, alpha: 1.0)
+            profileButton.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+            
+            // Optionally: Add action to tap on the profile
+            profileButton.addTarget(self, action: #selector(profileTapped), for: .touchUpInside)
+
+            // Embed it in a UIBarButtonItem
+            let profileBarItem = UIBarButtonItem(customView: profileButton)
+            navigationItem.rightBarButtonItem = profileBarItem
+        }
+    
+        
         // Initialize the searchResultsController
         searchResultsController = AnimeSearchResultsViewController()
 

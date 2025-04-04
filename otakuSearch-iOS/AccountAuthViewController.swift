@@ -1,15 +1,17 @@
 //
-//  ProfileController.swift
+//  AccountAuthViewController.swift
 //  otakuSearch-iOS
 //
-//  Created by Andrew Nguyen on 3/15/25.
+//  Created by Andrew Nguyen on 4/3/25.
 //
+
 import UIKit
 
-class ProfileController: UIViewController {
+class AccountAuthViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationItem.hidesBackButton = true
 
         // Do any additional setup after loading the view.
     }

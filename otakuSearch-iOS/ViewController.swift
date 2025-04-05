@@ -23,12 +23,28 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
     
     var wasSearching = false
     
+    //  logic for if the Profile is tapped, it will say whether user is logged in or not
     @objc func profileTapped() {
         let email = UserDefaults.standard.string(forKey: "loggedInEmail") ?? "Unknown"
         let alert = UIAlertController(title: "Logged In", message: "Welcome back, \(email)", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
+    
+    // logic for the filter button, once tapped, an action sheet will select filter options
+    @objc func filterTapped() {
+        print("🎛️ Filter button tapped")
+
+        let filterVC = FilterViewController()
+        if let sheet = filterVC.sheetPresentationController {
+            sheet.detents = [.medium(), .large()] // You can choose .fraction(0.4) too
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 16
+        }
+        filterVC.modalPresentationStyle = .pageSheet
+        present(filterVC, animated: true)
+    }
+
 
 
     
@@ -59,7 +75,29 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
 
             // Embed it in a UIBarButtonItem
             let profileBarItem = UIBarButtonItem(customView: profileButton)
-            navigationItem.rightBarButtonItem = profileBarItem
+        
+            // Add both buttons to right side of nav bar
+            navigationItem.rightBarButtonItems = [profileBarItem]
+        }
+        
+        // Filter button
+        let filterButtonBelow = UIButton(type: .system)
+        filterButtonBelow.setImage(UIImage(systemName: "line.3.horizontal.decrease.circle"), for: .normal)
+        filterButtonBelow.tintColor = UIColor(red: 219/255.0, green: 45/255.0, blue: 105/255.0, alpha: 1.0)
+        filterButtonBelow.translatesAutoresizingMaskIntoConstraints = false
+        filterButtonBelow.addTarget(self, action: #selector(self.filterTapped), for: .touchUpInside)
+        
+        DispatchQueue.main.async {
+            // adding the filter button into the subview handler
+            self.view.addSubview(filterButtonBelow)
+            
+            // constraints for the filter button
+            NSLayoutConstraint.activate([
+                filterButtonBelow.topAnchor.constraint(equalTo: self.searchController.searchBar.bottomAnchor, constant: 8),
+                filterButtonBelow.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -20),
+                filterButtonBelow.widthAnchor.constraint(equalToConstant: 48),
+                filterButtonBelow.heightAnchor.constraint(equalToConstant: 48)
+            ])
         }
     
         

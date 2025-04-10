@@ -6,23 +6,88 @@
 //
 import UIKit
 
-class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDelegate, UITableViewDataSource {
+// a protocol DisplayableAnime that both Anime and FilteredAnime conform to
+protocol DisplayableAnime {
+    var titleRomaji: String { get }
+    var titleEnglish: String? { get }
+}
+
+extension Anime: DisplayableAnime {
+    var titleRomaji: String { title.romaji ?? "" }
+    var titleEnglish: String? { title.english }
+}
+
+extension FilteredAnime: DisplayableAnime {
+    var titleRomaji: String { title.romaji }
+    var titleEnglish: String? { title.english }
+}
+
+// extension that enables logic for the FilterView Delegate
+extension ViewController: FilterViewControllerDelegate {
+    func didApplyFilters(_ filteredAnime: [FilteredAnime]) {
+        
+        // toggles no results if there is no filtered anime
+        toggleNoResultsLabel(show: filteredAnime.isEmpty)
+
+        self.isFiltering = true
+        self.filteredAnime = filteredAnime
+        self.table.reloadData()
+        self.showToast(message: "🎯 Filters Applied")
+        self.clearFiltersButton.alpha = 1
+    }
+
     
+    // clears the filters
+    func didClearFilters() {
+        
+        // toggles the boolean filtering to false
+        // empties the filteredAnime array
+        // reloads the table and displays the filters clearned
+        // along with reseting "no anime filtered" message, if there was no anime
+        self.isFiltering = false
+        self.filteredAnime = []
+        self.table.reloadData()
+        toggleNoResultsLabel(show: false)
+        self.showToast(message: "🧼 Filters Cleared")
+        self.clearFiltersButton.alpha = 0
+    }
+}
+
+
+class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDelegate, UITableViewDataSource {
+
     var searchResultsController: AnimeSearchResultsViewController! // Declare it as an optional, you’ll initialize it in viewDidLoad
     
     var searchController: UISearchController! // Declare the searchController as a class-level property
-
-
+    
     let viewModel = DiscoveryViewModel() // Declare the viewModel here to call the fetching method
     
     // Declration of Search debouncer and Search Bar's results
     var searchTimer: Timer?
     var searchTableView: UITableView!
     
+    // table that stores all the anime grids and cells
+    // declares as a UITableView
     var table: UITableView!
     
     var wasSearching = false
     
+    // Stores filtered results from FilterViewController
+    var filteredAnime: [FilteredAnime] = []
+
+    // Tracks if filtering mode is enabled
+    var isFiltering: Bool = false
+    
+    // tracks if a filter has been applied or not
+    var hasAppliedFilter: Bool = false
+    
+    // tracks the state of the clear filters button
+    var clearFiltersButton: UIButton!
+    
+    // declaration of the Label for NO Results
+    var noResultsLabel: UILabel!
+
+
     //  logic for if the Profile is tapped, it will say whether user is logged in or not
     @objc func profileTapped() {
         let email = UserDefaults.standard.string(forKey: "loggedInEmail") ?? "Unknown"
@@ -33,24 +98,66 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
     
     // logic for the filter button, once tapped, an action sheet will select filter options
     @objc func filterTapped() {
-        print("🎛️ Filter button tapped")
-
+        
         let filterVC = FilterViewController()
+        filterVC.delegate = self
+        
+        
         if let sheet = filterVC.sheetPresentationController {
-            sheet.detents = [.medium(), .large()] // You can choose .fraction(0.4) too
+            sheet.detents = [.medium(), .large()]
             sheet.prefersGrabberVisible = true
             sheet.preferredCornerRadius = 16
         }
-        filterVC.modalPresentationStyle = .pageSheet
-        present(filterVC, animated: true)
+
+        let navController = UINavigationController(rootViewController: filterVC)
+        navController.modalPresentationStyle = .pageSheet
+        present(navController, animated: true)
     }
 
+    
+    // handles the filter applied to here
+    @objc func handleFilterApplied(_ notification: Notification) {
+        guard hasAppliedFilter else { return }
 
+        print("📬 Filter was applied, reloading table view")
+        table.reloadData()
+        hasAppliedFilter = false
+
+        // Show the clear filters button
+        UIView.animate(withDuration: 0.3) {
+            self.clearFiltersButton.alpha = 1
+        }
+    }
+
+    // helper function handles the clear filters button being tapped
+    // empties the filteredAnime array
+    @objc func clearFiltersTapped() {
+        
+        isFiltering = false //  isFiltering is declared as false
+        filteredAnime = []  //  filteredAnime array is emptied
+        table.reloadData()  //  table data is reloaded to have the "default fetch" work.
+        showToast(message: "🔄 Filters cleared")
+
+        UIView.animate(withDuration: 0.3) {
+            self.clearFiltersButton.alpha = 0
+        }
+    }
+    
+    // toggles the no results to show up
+    func toggleNoResultsLabel(show: Bool) {
+        UIView.animate(withDuration: 0.3) {
+            self.noResultsLabel.alpha = show ? 1 : 0
+            self.noResultsLabel.isHidden = !show
+        }
+    }
 
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleFilterApplied(_:)), name: NSNotification.Name("FilterApplied"), object: nil)
+        
+        
         // user session is being tracked, check if they are logged in for persistant state.
         if UserDefaults.standard.bool(forKey: "isLoggedIn") {
             print("✅ Already logged in as:", UserDefaults.standard.string(forKey: "loggedInEmail") ?? "unknown")
@@ -58,8 +165,8 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
             print("🔒 Not logged in.")
         }
     }
-
-
+    
+    
     override func viewDidLoad() {
         
         // check if user is logged in, if so, show a profile icon
@@ -72,18 +179,19 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
             
             // Optionally: Add action to tap on the profile
             profileButton.addTarget(self, action: #selector(profileTapped), for: .touchUpInside)
-
+            
             // Embed it in a UIBarButtonItem
             let profileBarItem = UIBarButtonItem(customView: profileButton)
-        
+            
             // Add both buttons to right side of nav bar
             navigationItem.rightBarButtonItems = [profileBarItem]
         }
         
         // Filter button
         let filterButtonBelow = UIButton(type: .system)
-        filterButtonBelow.setImage(UIImage(systemName: "line.3.horizontal.decrease.circle"), for: .normal)
+        filterButtonBelow.setImage(UIImage(systemName: "line.3.horizontal.decrease.circle.fill"), for: .normal)
         filterButtonBelow.tintColor = UIColor(red: 219/255.0, green: 45/255.0, blue: 105/255.0, alpha: 1.0)
+        filterButtonBelow.layer.cornerRadius = 28 // Rounded to make it a circle
         filterButtonBelow.translatesAutoresizingMaskIntoConstraints = false
         filterButtonBelow.addTarget(self, action: #selector(self.filterTapped), for: .touchUpInside)
         
@@ -93,26 +201,49 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
             
             // constraints for the filter button
             NSLayoutConstraint.activate([
-                filterButtonBelow.topAnchor.constraint(equalTo: self.searchController.searchBar.bottomAnchor, constant: 8),
+                filterButtonBelow.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 6),
                 filterButtonBelow.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -20),
-                filterButtonBelow.widthAnchor.constraint(equalToConstant: 48),
-                filterButtonBelow.heightAnchor.constraint(equalToConstant: 48)
+                filterButtonBelow.widthAnchor.constraint(equalToConstant: 56),
+                filterButtonBelow.heightAnchor.constraint(equalToConstant: 56)
             ])
         }
-    
+        
+        
+        // shows the clear filters button
+        func setupClearFiltersButton() {
+            clearFiltersButton = UIButton(type: .system)
+            clearFiltersButton.setTitle("Clear Filters", for: .normal)
+            clearFiltersButton.setTitleColor(.white, for: .normal)
+            clearFiltersButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+            clearFiltersButton.backgroundColor = UIColor(red: 219/255.0, green: 55/255.0, blue: 45/255.0, alpha: 1.0)
+            clearFiltersButton.layer.cornerRadius = 10
+            clearFiltersButton.alpha = 0 // start hidden
+            clearFiltersButton.translatesAutoresizingMaskIntoConstraints = false
+            clearFiltersButton.addTarget(self, action: #selector(clearFiltersTapped), for: .touchUpInside)
+
+            //  adds to the clearFiltersButton
+            view.addSubview(clearFiltersButton)
+
+            NSLayoutConstraint.activate([
+                clearFiltersButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+                clearFiltersButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                clearFiltersButton.widthAnchor.constraint(equalToConstant: 160),
+                clearFiltersButton.heightAnchor.constraint(equalToConstant: 50)
+            ])
+        }
         
         // Initialize the searchResultsController
         searchResultsController = AnimeSearchResultsViewController()
-
+        
         // Embed it in a navigation controller
         let navSearchResultsController = UINavigationController(rootViewController: searchResultsController)
-
+        
         // Initialize the search controller with the embedded search results controller
         searchController = UISearchController(searchResultsController: navSearchResultsController)
-
+        
         // Set the search results updater to the parent (self)
         searchController.searchResultsUpdater = self
-
+        
         
         // Example of a custom dark color using RGB values
         view.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0)
@@ -120,7 +251,7 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         // Assign the search controller to the navigation bar
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false  // Keeps it fixed
-
+        
         // Center the title of the navigation bar
         let titleLabel = UILabel()
         titleLabel.text = "Discovery"
@@ -128,12 +259,12 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         titleLabel.font = UIFont.boldSystemFont(ofSize: 20)  // Adjust the font size as necessary
         titleLabel.sizeToFit()
         navigationItem.titleView = titleLabel  // This centers the title
-            
+        
         // Set up the search controller appearance
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         definesPresentationContext = true
-
+        
         // Configure the search bar appearance (placeholder, text color, etc.)
         let searchBar = searchController.searchBar
         let placeholderText = "Search Anime"
@@ -147,7 +278,7 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         
         // Set input text color to #efecec
         searchBar.searchTextField.textColor = UIColor(red: 239/255, green: 236/255, blue: 236/255, alpha: 1.0)
-
+        
         
         // Initialize the UITableView programmatically
         table = UITableView(frame: self.view.bounds, style: .plain)
@@ -155,7 +286,7 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         table.dataSource = self
         table.register(AnimeTableViewCell.self, forCellReuseIdentifier: AnimeTableViewCell.identifier)
         table.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0) // 1B1919 color
-
+        
         // Add the table view to the view hierarchy
         view.addSubview(table)
         
@@ -173,7 +304,6 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         }
         
         viewModel.fetchCurrentPopularAnime {
-            print("Fetch completed, current popular anime count: \(self.viewModel.currentPopularAnime.count)")
             DispatchQueue.main.async {
                 self.table.reloadData()
             }
@@ -197,6 +327,12 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         searchController.searchBar.placeholder = "Search Anime"
         navigationItem.searchController = searchController
         definesPresentationContext = true
+        
+        // declares the filter button 
+        setupClearFiltersButton()
+        
+        // call the no label button
+        setupNoResultsLabel()
     }
     
     // updates the search results that the search bar is querying
@@ -205,22 +341,22 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         guard let query = searchController.searchBar.text, !query.isEmpty else {
             return
         }
-
+        
         print("🔎 User is searching for: \(query)")
-
+        
         // Cancel previous timer
         searchTimer?.invalidate()
-
+        
         // Start new debounced fetch
         searchTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { _ in
             self.viewModel.fetchSearchResults(query: query) {
                 DispatchQueue.main.async {
                     print("🔄 Reloading searchTableView in VIEWCONTROLLER...")
-
+                    
                     // 🔥 This MUST be inside the callback AFTER results are updated
                     if let navVC = self.searchController.searchResultsController as? UINavigationController,
                        let searchVC = navVC.viewControllers.first as? AnimeSearchResultsViewController {
-
+                        
                         _ = searchVC.view  // This forces viewDidLoad() to run if it hasn’t yet
                         searchVC.searchedAnimeResults = self.viewModel.searchedAnimeResults
                         print("✅ Passed \(self.viewModel.searchedAnimeResults.count) anime to searchVC")
@@ -230,97 +366,118 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
             }
         }
     }
-
+    
     
     // MARK: - UITableViewDataSource Methods
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 5 // One section for each category (Trending, Upcoming, Current Popular, All-Time Popular)
+        //return 5 // One section for each category (Trending, Upcoming, Current Popular, All-Time Popular)
+        return isFiltering ? 1 : 5 // IF there is filtering, return 1 cell, otherwise 5 for the other sections
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 1 // Only one row per section, but it will hold a collection view
     }
+
     
     // the Header's in each of the grids
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        // If filtering is active, hide section headers
+        if isFiltering { return nil }
+
         let headerView = UIView()
-        
-        // Optional: Set background color of the Title Cell if needed
         headerView.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0)
-        
+
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Set title text based on section
-        switch section {
-        case 0:
-            titleLabel.text = "Trending Anime"
-        case 1:
-            titleLabel.text = "Upcoming Anime"
-        case 2:
-            titleLabel.text = "Current Popular Anime"
-        case 3:
-            titleLabel.text = "All-Time Popular Anime"
-        case 4:
-            titleLabel.text = "Top 100 Anime"
-        default:
-            titleLabel.text = ""
-        }
-        
-        // Set the text color using RGB values instead of hex
         titleLabel.textColor = UIColor(red: 239/255.0, green: 236/255.0, blue: 236/255.0, alpha: 1.0)
         titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
-        
-        // Add the titleLabel to the header view
+
+        // Set the section title
+        switch section {
+        case 0: titleLabel.text = "Trending Anime"
+        case 1: titleLabel.text = "Upcoming Anime"
+        case 2: titleLabel.text = "Current Popular Anime"
+        case 3: titleLabel.text = "All-Time Popular Anime"
+        case 4: titleLabel.text = "Top 100 Anime"
+        default: titleLabel.text = ""
+        }
+
+        // addds the title label into the header view
         headerView.addSubview(titleLabel)
         
-        // Add constraints to keep the label aligned to the left with padding
+        // constraints, for, the title label itself
         NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16), // Left padding of 16
-            titleLabel.centerYAnchor.constraint(equalTo: headerView.centerYAnchor) // Keep it vertically centered
+            titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
+            titleLabel.centerYAnchor.constraint(equalTo: headerView.centerYAnchor)
         ])
+
         return headerView
     }
 
-    
+        
+        
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        // Dequeue a reusable AnimeTableViewCell; fallback to an empty cell if casting fails
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "AnimeTableViewCell", for: indexPath) as? AnimeTableViewCell else {
             return UITableViewCell()
         }
-        
-        
-        //cell.animeData = animeSection.animeList  // Assign anime data
-        cell.delegate = self  // Set delegate
-        
-        // Choose the appropriate anime data based on section
+
+        // Set the delegate to handle events from this cell (e.g., anime tapped)
+        cell.delegate = self
+
+        // Define the list of anime that will be passed into the cell
         let animeList: [Anime]
-        switch indexPath.section {
-        case 0:
-            animeList = viewModel.trendingAnime // Fetch Trending anime from ViewModel
-        case 1:
-            animeList = viewModel.upcomingAnime // Fetch Upcoming anime from ViewModel
-        case 2:
-            animeList = viewModel.currentPopularAnime // Fetch Current popular anime from ViewModel
-        case 3:
-            animeList = viewModel.allTimePopularAnime // Fetch All-Time anime from ViewModel
-        case 4:
-            animeList = viewModel.top100Anime // Fetch Top 100 anime from ViewModel
-        default:
-            animeList = []
+
+        // is filtering == true, toggled when "Apply Filters" button is pressed
+        if isFiltering {
+            // 🧠 When filtering is active, convert the filtered anime (FilteredAnime) to the Anime struct expected by the cell
+
+            animeList = filteredAnime.map {
+                Anime(
+                    id: $0.id,
+                    title: AnimeTitle(
+                        romaji: $0.title.romaji,
+                        english: $0.title.english
+                    ),
+                    episodes: $0.episodes ?? 0,                          // Provide fallback if episode count is nil
+                    status: $0.status ?? "Unknown",                      // Provide fallback if status is nil
+                    coverImage: AnimeCoverImage(large: $0.coverImage.large)
+                )
+            }
+
+            // 🧪 Optional debug print
+            print("🎯 Showing \(animeList.count) filtered anime")
+            
+        } else {
+            // 📦 Default non-filtered data: Pick the correct anime list based on the section
+            switch indexPath.section {
+            case 0:
+                animeList = viewModel.trendingAnime
+            case 1:
+                animeList = viewModel.upcomingAnime
+            case 2:
+                animeList = viewModel.currentPopularAnime
+            case 3:
+                animeList = viewModel.allTimePopularAnime
+            case 4:
+                animeList = viewModel.top100Anime
+            default:
+                animeList = [] // Empty list if section is out of range
+            }
         }
-        
-        // Configure the cell with the correct anime data for the section
+
+        // 🎨 Configure the cell with the determined list of anime
         cell.configure(with: animeList)
-        
+
         return cell
     }
-
-    // Adjust the height of each row for the collection view
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 220 // Adjust the height based on the size of the collection view
+        
+        // Adjust the height of each row for the collection view
+        func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+            return 220 // Adjust the height based on the size of the collection view
+        }
     }
-}
 
 
 // MARK: - AnimeTableViewCellDelegate
@@ -337,6 +494,62 @@ extension ViewController: AnimeTableViewCellDelegate {
         }
     }
     
+    func didTapAnime(_ anime: Anime) {
+        // Handle anime cell tap here
+        print("🎬 Tapped anime: \(anime.title.romaji ?? "Unknown")")
+    }
+    
+    // function that displays a banner once the filters are tapped
+    func showToast(message: String, duration: TimeInterval = 2.0) {
+        let toastLabel = UILabel()
+        toastLabel.text = message
+        toastLabel.font = UIFont.systemFont(ofSize: 14)
+        toastLabel.textColor = .white
+        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        toastLabel.textAlignment = .center
+        toastLabel.layer.cornerRadius = 10
+        toastLabel.clipsToBounds = true
+        toastLabel.numberOfLines = 0
+
+        toastLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(toastLabel)
+
+        NSLayoutConstraint.activate([
+            toastLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80),
+            toastLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            toastLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 32),
+            toastLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -32)
+        ])
+
+        UIView.animate(withDuration: 0.5, delay: duration, options: .curveEaseOut, animations: {
+            toastLabel.alpha = 0
+        }) { _ in
+            toastLabel.removeFromSuperview()
+        }
+    }
+    
+    // set up not results label
+    func setupNoResultsLabel() {
+        noResultsLabel = UILabel()
+        noResultsLabel.text = "😕 No anime found.\nTry adjusting your filters."
+        noResultsLabel.textColor = .lightGray
+        noResultsLabel.numberOfLines = 0
+        noResultsLabel.textAlignment = .center
+        noResultsLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        noResultsLabel.isHidden = true
+        noResultsLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(noResultsLabel)
+        
+        NSLayoutConstraint.activate([
+            noResultsLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            noResultsLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            noResultsLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            noResultsLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+        ])
+    }
+
+    
     // Helper function to fetch AnimeDetail from your API or backend
     func fetchAnimeDetail(animeID: Int, completion: @escaping (AnimeDetail) -> Void) {
         let url = URL(string: "http://localhost:8080/anime/\(animeID)")! // Adjust the URL as needed
@@ -345,7 +558,6 @@ extension ViewController: AnimeTableViewCellDelegate {
                 print("❌ Invalid URL: \(url)")
                 return
             }
-    
             
             do {
                 // Decode the fetched data into an AnimeDetail object
@@ -354,8 +566,7 @@ extension ViewController: AnimeTableViewCellDelegate {
                 if let jsonString = String(data: data, encoding: .utf8) {
                     print("📝 JSON Response: \(jsonString)")
                 }
-
-
+                
                 DispatchQueue.main.async {
                     // Call the completion handler with the AnimeDetail instance
                     print("✅ Successfully decoded AnimeDetail")

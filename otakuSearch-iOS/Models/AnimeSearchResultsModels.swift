@@ -24,6 +24,8 @@ struct AnimeSearchEntry: Codable {
     let title: AnimeSearchTitle
     let coverImage: AnimeSearchCoverImage
     let seasonYear: Int?
+    let episodes: Int?
+    let status: String?
 }
 
 struct AnimeSearchTitle: Codable {

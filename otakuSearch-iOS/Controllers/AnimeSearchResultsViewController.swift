@@ -7,6 +7,25 @@
 
 import UIKit
 
+// MARK: - Model Conversion Extension
+
+/// Converts an AnimeSearchEntry into a normalized Anime model
+extension AnimeSearchEntry {
+    func toAnime() -> Anime {
+        return Anime(
+            id: self.id,
+            title: AnimeTitle(
+                romaji: self.title.romaji,
+                english: self.title.english
+            ),
+            episodes: self.episodes ?? 0,
+            status: self.status ?? "Unknown",
+            coverImage: AnimeCoverImage(large: self.coverImage.large)
+        )
+    }
+}
+
+
 class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdating, UITableViewDelegate, UITableViewDataSource {
     
     var searchTableView: UITableView!  // Make sure this is declared
@@ -84,11 +103,13 @@ class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdatin
             // Let it stay active so the overlay remains
             
             // Fetch first, push after
-            fetchAnimeDetail(animeID: selectedAnime.id) { animeDetail in
-                let detailVC = AnimeDetailViewController(anime: self.anime, animeID: selectedAnime.id, animeDetail: animeDetail)
-                
-                // 👇 Push from parent — search stays alive underneath
-                parentVC.navigationController?.pushViewController(detailVC, animated: true)
+            if let parentVC = self.presentingViewController as? ViewController {
+                fetchAnimeDetail(animeID: selectedAnime.id) { animeDetail in
+                    let anime = self.searchedAnimeResults[indexPath.row].toAnime()
+                    let detailVC = AnimeDetailViewController(anime: anime, animeID: anime.id, animeDetail: animeDetail)
+                    
+                    parentVC.navigationController?.pushViewController(detailVC, animated: true)
+                }
             }
         }
 

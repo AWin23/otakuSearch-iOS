@@ -215,7 +215,7 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
             clearFiltersButton.setTitle("Clear Filters", for: .normal)
             clearFiltersButton.setTitleColor(.white, for: .normal)
             clearFiltersButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
-            clearFiltersButton.backgroundColor = UIColor(red: 219/255.0, green: 55/255.0, blue: 45/255.0, alpha: 1.0)
+            clearFiltersButton.backgroundColor = .otakuRed
             clearFiltersButton.layer.cornerRadius = 10
             clearFiltersButton.alpha = 0 // start hidden
             clearFiltersButton.translatesAutoresizingMaskIntoConstraints = false
@@ -285,7 +285,7 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         table.delegate = self
         table.dataSource = self
         table.register(AnimeTableViewCell.self, forCellReuseIdentifier: AnimeTableViewCell.identifier)
-        table.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0) // 1B1919 color
+        table.backgroundColor = .otakuDark // 1B1919 color
         
         // Add the table view to the view hierarchy
         view.addSubview(table)

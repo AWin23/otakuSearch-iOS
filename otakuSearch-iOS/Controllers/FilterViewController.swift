@@ -107,7 +107,7 @@ class FilterViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = UIColor(red: 27/255, green: 25/255, blue: 25/255, alpha: 1.0) // #1b1919
+        view.backgroundColor = .otakuDark
 
         // declares headers for the label
         setupHeader()
@@ -124,7 +124,7 @@ class FilterViewController: UIViewController {
         applyButton.setTitle("Apply Filters", for: .normal)
         applyButton.setTitleColor(.white, for: .normal)
         applyButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
-        applyButton.backgroundColor = UIColor(red: 219/255, green: 55/255, blue: 45/255, alpha: 1.0) // special "selected red background"
+        applyButton.backgroundColor = .otakuRed // selected red button
         applyButton.layer.cornerRadius = 10
         applyButton.translatesAutoresizingMaskIntoConstraints = false
         applyButton.addTarget(self, action: #selector(applyButtonTapped), for: .touchUpInside)
@@ -187,7 +187,7 @@ class FilterViewController: UIViewController {
             let button = UIButton(type: .system)
             button.setTitle(genre, for: .normal)
             button.setTitleColor(.white, for: .normal)
-            button.backgroundColor = UIColor(red: 219/255.0, green: 45/255.0, blue: 105/255.0, alpha: 1.0) // #db2d69
+            button.backgroundColor = .otakuPink // selected red button
             button.layer.cornerRadius = 10
             button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
             button.contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
@@ -222,7 +222,7 @@ class FilterViewController: UIViewController {
         // 1. Year Label
         let yearLabel = UILabel()
         yearLabel.text = "Year"
-        yearLabel.textColor = .white
+        yearLabel.textColor = .otakuGray
         yearLabel.font = UIFont.boldSystemFont(ofSize: 18)
         yearLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(yearLabel)
@@ -231,7 +231,7 @@ class FilterViewController: UIViewController {
         yearPicker = UIPickerView()
         yearPicker.delegate = self
         yearPicker.dataSource = self
-        yearPicker.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0) // match theme
+        yearPicker.backgroundColor = .otakuDark
         yearPicker.translatesAutoresizingMaskIntoConstraints = false
         
         // pink border to background - Year Picker
@@ -297,7 +297,7 @@ class FilterViewController: UIViewController {
             let seasonButton = UIButton(type: .system)
             seasonButton.setTitle(season, for: .normal)
             seasonButton.setTitleColor(.white, for: .normal)
-            seasonButton.backgroundColor = UIColor(red: 219/255.0, green: 45/255.0, blue: 105/255.0, alpha: 1.0) // #db2d69
+            seasonButton.backgroundColor = .otakuPink // #db2d69
             seasonButton.layer.cornerRadius = 10
             seasonButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
             seasonButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
@@ -360,7 +360,7 @@ class FilterViewController: UIViewController {
             let statusButton = UIButton(type: .system)
             statusButton.setTitle(label, for: .normal)
             statusButton.setTitleColor(.white, for: .normal)
-            statusButton.backgroundColor = UIColor(red: 219/255.0, green: 45/255.0, blue: 105/255.0, alpha: 1.0) // #db2d69
+            statusButton.backgroundColor = .otakuPink // #db2d69 for "default buton color"
             statusButton.layer.cornerRadius = 10
             statusButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
             statusButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
@@ -423,7 +423,7 @@ class FilterViewController: UIViewController {
             let formatButton = UIButton(type: .system)
             formatButton.setTitle(label, for: .normal)
             formatButton.setTitleColor(.white, for: .normal)
-            formatButton.backgroundColor = UIColor(red: 219/255.0, green: 45/255.0, blue: 105/255.0, alpha: 1.0) // #db2d69
+            formatButton.backgroundColor = .otakuPink // #db2d69 (default button)
             formatButton.layer.cornerRadius = 10
             formatButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
             formatButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
@@ -567,12 +567,12 @@ class FilterViewController: UIViewController {
         if selectedGenres.contains(genre) {
             // 🔄 Deselect
             selectedGenres.remove(genre)
-            sender.backgroundColor = UIColor(red: 219/255.0, green: 45/255.0, blue: 105/255.0, alpha: 1.0) // special red background
+            sender.backgroundColor = .otakuPink // special red background (SELECTED)
             sender.setTitleColor(.white, for: .normal)
         } else {
             // ✅ Select
             selectedGenres.insert(genre)
-            sender.backgroundColor = UIColor(red: 219/255, green: 55/255, blue: 45/255, alpha: 1.0) // slightly different red
+            sender.backgroundColor = .otakuRed // slightly different red
             sender.setTitleColor(UIColor(red: 239/255, green: 236/255, blue: 236/255, alpha: 1.0), for: .normal)
         }
     }
@@ -609,17 +609,17 @@ class FilterViewController: UIViewController {
         if selectedStatus == tappedStatus {
             // Deselect if already selected
             selectedStatus = nil
-            sender.backgroundColor = UIColor(red: 219/255, green: 45/255, blue: 105/255, alpha: 1.0)
+            sender.backgroundColor = .otakuPink // "default button color"
             sender.setTitleColor(.white, for: .normal)
         } else {
             // Select new button and deselect others
             for statusButton in statusButtons {
-                statusButton.backgroundColor = UIColor(red: 219/255, green: 45/255, blue: 105/255, alpha: 1.0)
+                statusButton.backgroundColor = .otakuPink // "default button color"
                 statusButton.setTitleColor(.white, for: .normal)
             }
 
             selectedStatus = tappedStatus
-            sender.backgroundColor = UIColor(red: 219/255, green: 55/255, blue: 45/255, alpha: 1.0)
+            sender.backgroundColor = .otakuRed // "SELECTED RED COLOR"
             sender.setTitleColor(.white, for: .normal)
         }
     }
@@ -632,12 +632,12 @@ class FilterViewController: UIViewController {
         if selectedFormats.contains(format) {
             // 🔄 Deselect
             selectedFormats.remove(format)
-            sender.backgroundColor = UIColor(red: 219/255.0, green: 45/255.0, blue: 105/255.0, alpha: 1.0) // special red background
+            sender.backgroundColor = .otakuPink // special red background (SELECTED)
             sender.setTitleColor(.white, for: .normal)
         } else {
             // ✅ Select
             selectedFormats.insert(format)
-            sender.backgroundColor = UIColor(red: 219/255, green: 55/255, blue: 45/255, alpha: 1.0) // slightly different red
+            sender.backgroundColor = .otakuRed // special red background (SELECTED)
             sender.setTitleColor(UIColor(red: 239/255, green: 236/255, blue: 236/255, alpha: 1.0), for: .normal)
         }
 

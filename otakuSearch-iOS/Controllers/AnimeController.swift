@@ -53,7 +53,11 @@ class AnimeController: UIViewController, UITableViewDelegate, UITableViewDataSou
         
         print("✅ AnimeController view loaded")
 
-        view.backgroundColor = .black // or whatever matches your theme
+        // special dark background
+        view.backgroundColor = .otakuDark
+        tableView.backgroundColor = .clear // Let background shine through
+        tableView.separatorStyle = .none   // Optional: cleaner look
+        
         view.addSubview(tableView) // add the table of the populated favoirte anime.
         
         // Setup tableView constraints

@@ -38,7 +38,8 @@ class AnimeTableViewCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         
         // Set the background color of the collection view (not the layout)
         // 1B1919 color
-        collectionView.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0) // 1B1919 color
+        //collectionView.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0) // 1B1919 color
+        collectionView.backgroundColor = UIColor(hex: "#1B1919")
         
         collectionView.showsHorizontalScrollIndicator = false
                 

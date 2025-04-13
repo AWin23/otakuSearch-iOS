@@ -93,10 +93,10 @@
 		BBFA21292D83F69800AB33CB = {
 			isa = PBXGroup;
 			children = (
-				BBFA21342D83F69800AB33CB /* otakuSearch-iOS */,
 				BBFA214E2D83F69A00AB33CB /* otakuSearch-iOSTests */,
 				BBFA21582D83F69A00AB33CB /* otakuSearch-iOSUITests */,
 				BBFA21332D83F69800AB33CB /* Products */,
+				BBFA21342D83F69800AB33CB /* otakuSearch-iOS */,
 			);
 			sourceTree = "<group>";
 		};

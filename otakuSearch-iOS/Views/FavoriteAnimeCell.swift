@@ -31,7 +31,21 @@ class FavoriteAnimeCell: UITableViewCell {
     /// Initializes the custom cell and its layout.
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        backgroundColor = UIColor(red: 27/255, green: 25/255, blue: 25/255, alpha: 1.0)
+        
+        // Background color (optional): cell should blend in with dark background
+        backgroundColor = .clear
+                
+        // Anime Image View
+        animeImageView.contentMode = .scaleAspectFill
+        animeImageView.clipsToBounds = true
+        animeImageView.layer.cornerRadius = 8
+        animeImageView.translatesAutoresizingMaskIntoConstraints = false
+        
+                
+        // Title Label
+        titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        titleLabel.textColor = UIColor(hex: "#efecec")
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         // Add subviews
         contentView.addSubview(animeImageView)

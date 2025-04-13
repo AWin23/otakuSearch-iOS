@@ -38,14 +38,15 @@ class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdatin
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0)
+        // search results color is a special black (otakuDark)
+        view.backgroundColor = .otakuDark
         
         // Initialize and set up the table view
         searchTableView = UITableView(frame: view.bounds, style: .plain)
         searchTableView.delegate = self
         searchTableView.dataSource = self
         searchTableView.register(AnimeTableViewCell.self, forCellReuseIdentifier: AnimeTableViewCell.identifier)
-        searchTableView.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0)
+        searchTableView.backgroundColor = .otakuDark
         
         // REGISTERS the cell class here
         searchTableView.register(AnimeSearchResultTableViewCell.self, forCellReuseIdentifier: AnimeSearchResultTableViewCell.identifier)
@@ -71,9 +72,6 @@ class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdatin
     // Did the view actually appear?
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        print("👀 AnimeSearchResultsViewController appeared.")
-        print("🎯 searchTableView.delegate: \(searchTableView.delegate.debugDescription)")
-        print("🎯 searchTableView.dataSource: \(searchTableView.dataSource.debugDescription)")
         
         searchTableView.reloadData()
         print("📢 Called reloadData in viewDidAppear")

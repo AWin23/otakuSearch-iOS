@@ -39,7 +39,8 @@ class AnimeDetailViewController: UIViewController {
         print("AnimeDetailViewController loaded for animeID: \(animeID)")
         
         // Set background color
-        view.backgroundColor = UIColor(red: 27/255.0, green: 25/255.0, blue: 25/255.0, alpha: 1.0)
+        view.backgroundColor = .otakuDark
+
 
         // Scroll View (To allow scrolling if content is large)
         let scrollView = UIScrollView()
@@ -113,7 +114,7 @@ class AnimeDetailViewController: UIViewController {
         let addToListButton = UIButton(type: .system)
         addToListButton.setTitle("Add to List", for: .normal)
         addToListButton.setTitleColor(.white, for: .normal)
-        addToListButton.backgroundColor = .red
+        addToListButton.backgroundColor = .otakuPink
         addToListButton.layer.cornerRadius = 8
         addToListButton.isEnabled = false // Later enable when authentication is implemented
         addToListButton.translatesAutoresizingMaskIntoConstraints = false

@@ -12,6 +12,8 @@ class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdatin
     var searchTableView: UITableView!  // Make sure this is declared
     var viewModel = DiscoveryViewModel() // Use the same ViewModel for search results
     
+    var anime: Anime! // declare the anime model
+    
     var searchedAnimeResults: [AnimeSearchEntry] = [] // Array to store the searched anime on search bar
 
     
@@ -83,7 +85,7 @@ class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdatin
             
             // Fetch first, push after
             fetchAnimeDetail(animeID: selectedAnime.id) { animeDetail in
-                let detailVC = AnimeDetailViewController(animeID: selectedAnime.id, animeDetail: animeDetail)
+                let detailVC = AnimeDetailViewController(anime: self.anime, animeID: selectedAnime.id, animeDetail: animeDetail)
                 
                 // 👇 Push from parent — search stays alive underneath
                 parentVC.navigationController?.pushViewController(detailVC, animated: true)

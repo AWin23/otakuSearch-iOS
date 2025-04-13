@@ -489,7 +489,7 @@ extension ViewController: AnimeTableViewCellDelegate {
         fetchAnimeDetail(animeID: anime.id) { animeDetail in
             
             // Step 2: Pass the fetched AnimeDetail instance to the detail view controller
-            let detailVC = AnimeDetailViewController(animeID: anime.id, animeDetail: animeDetail)
+            let detailVC = AnimeDetailViewController(anime: anime, animeID: anime.id, animeDetail: animeDetail)
             self.navigationController?.pushViewController(detailVC, animated: true)
         }
     }
@@ -497,6 +497,7 @@ extension ViewController: AnimeTableViewCellDelegate {
     func didTapAnime(_ anime: Anime) {
         // Handle anime cell tap here
         print("🎬 Tapped anime: \(anime.title.romaji ?? "Unknown")")
+        
     }
     
     // function that displays a banner once the filters are tapped

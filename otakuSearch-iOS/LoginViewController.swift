@@ -17,6 +17,7 @@ class LoginViewController: UIViewController {
 
         // Do any additional setup after loading the view.
     }
+
     @IBAction func loginClicked(_ sender: UIButton) {
         // Validate email and password fields
         guard let email = emailTextField.text, !email.isEmpty,
@@ -47,38 +48,52 @@ class LoginViewController: UIViewController {
 
         // Send login request
         URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    self.showAlert(message: "Error: \(error.localizedDescription)")
-                    return
-                }
+            guard let data = data, error == nil else {
+                print("Login failed:", error?.localizedDescription ?? "Unknown error")
+                return
+            }
 
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    self.showAlert(message: "Invalid response.")
-                    return
+            // Parse response JSON
+            do {
+                // Try to print the raw string response
+                if let rawString = String(data: data, encoding: .utf8) {
+                    print("🧾 Raw response:\n\(rawString)")
                 }
+                
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let userId = json["userId"] as? Int,
+                   let email = json["email"] as? String {
+                    
+                    // Save to UserDefaults
+                    UserDefaults.standard.set(true, forKey: "isLoggedIn")
+                    UserDefaults.standard.set(String(userId), forKey: "userId")
+                    UserDefaults.standard.set(email, forKey: "userEmail")
+                    
+                    print("✅ Logged in userId:", userId)
+                    
+                    // show the alert first and then dismiss it or transition after tapping "OK".
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(title: "Success", message: "Login successful!", preferredStyle: .alert)
+                        
+                        alert.addAction(UIAlertAction(title: "Continue", style: .default, handler: { _ in
+                            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                            let profileVC = storyboard.instantiateViewController(withIdentifier: "ProfileViewController") as! ProfileViewController
+                            self.navigationController?.pushViewController(profileVC, animated: true)
+                        }))
+                        
+                        self.present(alert, animated: true)
+                    }
 
-                if httpResponse.statusCode == 200 {
-                    // Save login state (you could also decode a userId from `data` if you return it)
-                    UserDefaults.standard.set(true, forKey: "isLoggedIn") // Flag that user is logged in
-                    UserDefaults.standard.set(email, forKey: "loggedInEmail") // Save user email (or ID if you prefer)
-                    
-                    // ✅ Optional: Force UserDefaults to save immediately
-                    UserDefaults.standard.synchronize()
-                    
-                    // Show sucess alert and Seque forward
-                    let alert = UIAlertController(title: "✅ Success", message: "Logged in successfully!", preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "Continue", style: .default) { _ in
-                        self.performSegue(withIdentifier: "goToNext", sender: self)
-                    })
-                    self.present(alert, animated: true)
+
                 } else {
-                    self.showAlert(message: "❌ Invalid credentials. Please try again.")
+                    print("❌ Could not parse user data from login response.")
                 }
+            } catch {
+                print("❌ JSON parse error:", error.localizedDescription)
             }
         }.resume()
     }
-    
+
 
     /*
     // MARK: - Navigation

@@ -10,6 +10,7 @@ import UIKit
 // AnimeDetailViewController displays detailed information for a specific anime.
 class AnimeDetailViewController: UIViewController {
     
+    var anime: Anime! // anime variable to allow for Anime types
     
     var animeID: Int  // Store the anime ID
     
@@ -17,7 +18,8 @@ class AnimeDetailViewController: UIViewController {
     var animeDetail: AnimeDetail
 
 // Custom initializer to receive the anime ID
-    init(animeID: Int, animeDetail: AnimeDetail) {
+    init(anime: Anime, animeID: Int, animeDetail: AnimeDetail) {
+        self.anime = anime
         self.animeID = animeID
         self.animeDetail = animeDetail
         super.init(nibName: nil, bundle: nil)
@@ -116,6 +118,11 @@ class AnimeDetailViewController: UIViewController {
         addToListButton.isEnabled = false // Later enable when authentication is implemented
         addToListButton.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(addToListButton)
+        
+        // checks the login state of the user
+        let isLoggedIn = UserDefaults.standard.bool(forKey: "isLoggedIn")
+        addToListButton.isEnabled = isLoggedIn
+
 
         // Summary Label
         let summaryLabel = UILabel()
@@ -296,7 +303,69 @@ class AnimeDetailViewController: UIViewController {
         
         // Fetch additional details about the anime from the backend when the view is loaded.
         fetchAnimeDetails()
+        
+        // wire up the "Add to favorites"
+        addToListButton.addTarget(self, action: #selector(addToFavoritesTapped), for: .touchUpInside)
     }
+    
+    // funtion to handle the favorites anime
+    @objc func addToFavoritesTapped() {
+        print("🟥 Add to List button tapped!")
+        
+        let isLoggedIn = UserDefaults.standard.bool(forKey: "isLoggedIn")
+        let userId = UserDefaults.standard.string(forKey: "userId")
+
+        print("🧪 isLoggedIn:", isLoggedIn)
+        print("🧪 userId:", userId ?? "nil")
+        
+        guard UserDefaults.standard.bool(forKey: "isLoggedIn"),
+              let userId = UserDefaults.standard.string(forKey: "userId") else {
+            showAlert(title: "Not Logged In", message: "You must be logged in to add anime to your list.")
+            return
+        }
+
+
+        // Create the favorite anime data payload to store into User's DB
+        let favoriteAnime: [String: Any] = [
+            "animeId": anime.id,
+            "title": anime.title.romaji ?? anime.title.english ?? "Unknown Title",
+            "coverImageUrl": anime.coverImage.large ?? ""
+        ]
+        
+        print("📦 Payload being sent:", favoriteAnime)
+
+        // Convert to JSON and send POST
+        guard let url = URL(string: "http://localhost:8080/users/\(userId)/favorites"),
+              let jsonData = try? JSONSerialization.data(withJSONObject: favoriteAnime) else {
+            print("Invalid URL or JSON data")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    self.showAlert(title: "Error", message: "Failed to add to list: \(error.localizedDescription)")
+                    return
+                }
+
+                self.showAlert(title: "Success", message: "Anime added to your list!")
+            }
+        }.resume()
+    }
+    
+    
+    // display the alert
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
     
     // This function fetches additional details about the anime by calling a backend API.
     private func fetchAnimeDetails() {

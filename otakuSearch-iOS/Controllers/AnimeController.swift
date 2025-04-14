@@ -52,15 +52,40 @@ class AnimeController: UIViewController, UITableViewDelegate, UITableViewDataSou
         super.viewDidLoad()
         
         print("✅ AnimeController view loaded")
+        
+        // 🌟 Create a custom table header label
+        let headerLabel = UILabel()
+        headerLabel.text = "⭐️ Personal Favorites"
+        headerLabel.font = UIFont.systemFont(ofSize: 22, weight: .bold)
+        headerLabel.textColor = .otakuGray
+        headerLabel.textAlignment = .left
+        headerLabel.backgroundColor = .clear
+        headerLabel.frame = CGRect(x: 16, y: 0, width: view.frame.width - 32, height: 44)
+
+        // 📦 Wrap in a container view (for spacing)
+        let headerContainer = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 60))
+        headerContainer.backgroundColor = .clear
+        headerContainer.addSubview(headerLabel)
+        
+        // Add constraints for Header of Table(optional but cleaner)
+        headerLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            headerLabel.leadingAnchor.constraint(equalTo: headerContainer.leadingAnchor, constant: 16),
+            headerLabel.trailingAnchor.constraint(equalTo: headerContainer.trailingAnchor, constant: -16),
+            headerLabel.bottomAnchor.constraint(equalTo: headerContainer.bottomAnchor, constant: -8)
+        ])
+        
+        // 🎯 Assign to tableView header
+        tableView.tableHeaderView = headerContainer
 
         // special dark background
         view.backgroundColor = .otakuDark
         tableView.backgroundColor = .clear // Let background shine through
         tableView.separatorStyle = .none   // Optional: cleaner look
-        
+                
         view.addSubview(tableView) // add the table of the populated favoirte anime.
         
-        // Setup tableView constraints
+        // Setup tableView constraints for the Favorite Anime List
             NSLayoutConstraint.activate([
                 tableView.topAnchor.constraint(equalTo: view.topAnchor),
                 tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -71,15 +96,27 @@ class AnimeController: UIViewController, UITableViewDelegate, UITableViewDataSou
         // Set delegate & data source
         tableView.delegate = self
         tableView.dataSource = self
-        
-        guard let userId = UserDefaults.standard.string(forKey: "userId"),
-              UserDefaults.standard.bool(forKey: "isLoggedIn") else {
-            showAlert(title: "Not Logged In", message: "You must be logged in to view your favorites.")
-            return
-        }
+    }
+    
+    // runs every time user enters the "Favorites Tab"
+    // perfectly checks login state and updates the UI
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
 
+            // Enhanced login check
+            let isLoggedIn = UserDefaults.standard.bool(forKey: "isLoggedIn")
+            let userId = UserDefaults.standard.string(forKey: "userId")
+            let userEmail = UserDefaults.standard.string(forKey: "userEmail")
 
-        fetchFavorites(for: userId)
+            if !isLoggedIn || userId == nil || userEmail == nil {
+                showAlert(title: "Not Logged In", message: "You must be logged in to view your favorites.")
+                favoriteAnime = []               // Clear previous data
+                tableView.reloadData()
+                return
+            }
+
+            // ✅ Reload favorites every time tab is visited
+            fetchFavorites(for: userId!)
     }
     
     // show the alert, of user logged in or not
@@ -93,6 +130,7 @@ class AnimeController: UIViewController, UITableViewDelegate, UITableViewDataSou
     // fetches the user's favorite anime
     func fetchFavorites(for userId: String) {
         guard let url = URL(string: "http://localhost:8080/users/\(userId)/favorites") else { return }
+        print("fetching user's favorites")
 
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let data = data {

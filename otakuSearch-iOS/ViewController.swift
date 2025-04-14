@@ -90,7 +90,12 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
 
     //  logic for if the Profile is tapped, it will say whether user is logged in or not
     @objc func profileTapped() {
-        let email = UserDefaults.standard.string(forKey: "loggedInEmail") ?? "Unknown"
+        let email = UserDefaults.standard.string(forKey: "userEmail") ?? "Unknown"
+        
+        // 🧪 Debug print
+        print("👤 User tapped profile icon. Loaded email: \(email)")
+        
+        
         let alert = UIAlertController(title: "Logged In", message: "Welcome back, \(email)", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
@@ -150,22 +155,33 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
             self.noResultsLabel.isHidden = !show
         }
     }
-
     
+    /// Called every time the view is about to appear.
+    /// Ensures the navigation bar reflects the current login state.
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(handleFilterApplied(_:)), name: NSNotification.Name("FilterApplied"), object: nil)
-        
-        
-        // user session is being tracked, check if they are logged in for persistant state.
+        updateNavBarForLoginState() // 🔄 Re-evaluate nav bar visibility each time the view appears
+    }
+
+    /// Updates the navigation bar to show or hide the profile icon based on login state.
+    func updateNavBarForLoginState() {
         if UserDefaults.standard.bool(forKey: "isLoggedIn") {
-            print("✅ Already logged in as:", UserDefaults.standard.string(forKey: "loggedInEmail") ?? "unknown")
+            // ✅ User is logged in → show profile icon
+            
+            let profileButton = UIButton(type: .custom)
+            profileButton.setImage(UIImage(systemName: "person.circle.fill"), for: .normal)
+            profileButton.tintColor = .otakuPink // 🎨 Accent color from theme
+            profileButton.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+            profileButton.addTarget(self, action: #selector(profileTapped), for: .touchUpInside)
+
+            let profileBarItem = UIBarButtonItem(customView: profileButton)
+            navigationItem.rightBarButtonItems = [profileBarItem]
         } else {
-            print("🔒 Not logged in.")
+            // ❌ User is logged out → remove profile icon
+            navigationItem.rightBarButtonItems = []
         }
     }
-    
+
     
     override func viewDidLoad() {
         

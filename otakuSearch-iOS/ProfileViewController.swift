@@ -12,7 +12,53 @@ class ProfileViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        view.backgroundColor = .otakuDark
+            
+            // Get the user's email from UserDefaults
+            let userEmail = UserDefaults.standard.string(forKey: "userEmail") ?? "Unknown"
+
+            // Create the toast card container
+            let profileCard = UIView()
+            profileCard.backgroundColor = UIColor(white: 1.0, alpha: 0.05)
+            profileCard.layer.cornerRadius = 12
+            profileCard.layer.borderWidth = 1.2
+            profileCard.layer.borderColor = UIColor.otakuPink.cgColor
+            profileCard.translatesAutoresizingMaskIntoConstraints = false
+
+            // Avatar image
+            let avatarImage = UIImageView(image: UIImage(systemName: "person.crop.circle.fill"))
+            avatarImage.tintColor = .otakuPink
+            avatarImage.contentMode = .scaleAspectFit
+            avatarImage.translatesAutoresizingMaskIntoConstraints = false
+
+            // Email label
+            let emailLabel = UILabel()
+            emailLabel.text = userEmail
+            emailLabel.textColor = .otakuGray
+            emailLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+            emailLabel.translatesAutoresizingMaskIntoConstraints = false
+
+            // Add subviews to the card
+            profileCard.addSubview(avatarImage)
+            profileCard.addSubview(emailLabel)
+            view.addSubview(profileCard)
+
+            // Layout constraints
+            NSLayoutConstraint.activate([
+                profileCard.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                profileCard.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
+                profileCard.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.9),
+                profileCard.heightAnchor.constraint(equalToConstant: 80),
+
+                avatarImage.leadingAnchor.constraint(equalTo: profileCard.leadingAnchor, constant: 16),
+                avatarImage.centerYAnchor.constraint(equalTo: profileCard.centerYAnchor),
+                avatarImage.widthAnchor.constraint(equalToConstant: 40),
+                avatarImage.heightAnchor.constraint(equalToConstant: 40),
+
+                emailLabel.leadingAnchor.constraint(equalTo: avatarImage.trailingAnchor, constant: 16),
+                emailLabel.centerYAnchor.constraint(equalTo: profileCard.centerYAnchor),
+                emailLabel.trailingAnchor.constraint(equalTo: profileCard.trailingAnchor, constant: -16)
+            ])
     }
     
     // 🔗 Connect this IBAction to your "Logout" button in storyboard

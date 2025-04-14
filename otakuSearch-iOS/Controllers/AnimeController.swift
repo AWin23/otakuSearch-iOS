@@ -47,6 +47,68 @@ class AnimeController: UIViewController, UITableViewDelegate, UITableViewDataSou
         // Return the populated cell to be rendered in the table
         return cell
     }
+    
+    // MARK: - UITableViewDelegate
+    // When user taps a favorite anime, push the detail screen with that anime's info
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedFavorite = favoriteAnime[indexPath.row]
+
+        // 🧠 Convert FavoriteAnime to Anime model (to reuse AnimeDetailViewController)
+        let anime = Anime(
+            id: selectedFavorite.animeId,
+            title: AnimeTitle(
+                romaji: selectedFavorite.title,
+                english: selectedFavorite.title // Same here; if you stored separate romaji/english, adjust accordingly
+            ),
+            episodes: 0, // No episode data stored — use 0 or skip showing in detail
+            status: "Unknown", // You can omit status if not needed
+            coverImage: AnimeCoverImage(large: selectedFavorite.coverImageUrl)
+        )
+
+        // Fetch the full AnimeDetail first, then push
+        print("🧭 NavigationController exists:", self.navigationController != nil)
+            fetchAnimeDetail(animeID: selectedFavorite.animeId) { animeDetail in
+                let detailVC = AnimeDetailViewController(anime: anime, animeID: anime.id, animeDetail: animeDetail)
+
+                // ✅ Try to push using presenting VC's navController (like the AnimeSearchResultsViewController before)
+                if let parentVC = self.presentingViewController as? ViewController {
+                    parentVC.navigationController?.pushViewController(detailVC, animated: true)
+                } else {
+                    // 🧯 Fallback in case you're already embedded in a nav stack
+                    self.navigationController?.pushViewController(detailVC, animated: true)
+                }
+            }
+
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    // MARK: - Swipe to Delete Support
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
+    -> UISwipeActionsConfiguration? {
+        
+        let deleteAction = UIContextualAction(style: .destructive, title: "Remove") { (_, _, completionHandler) in
+            
+            let animeToDelete = self.favoriteAnime[indexPath.row]
+            print("🗑 Removing anime with favoriteId: \(animeToDelete.animeId)")
+
+            // Perform DELETE request to backend
+            self.deleteFavorite(favoriteId: animeToDelete.favoriteId) {
+                // ✅ Remove from UI on success
+                DispatchQueue.main.async {
+                    self.favoriteAnime.remove(at: indexPath.row)
+                    self.tableView.deleteRows(at: [indexPath], with: .automatic)
+                }
+            }
+
+            completionHandler(true)
+        }
+
+        deleteAction.backgroundColor = .systemRed
+        return UISwipeActionsConfiguration(actions: [deleteAction])
+    }
+
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -151,9 +213,55 @@ class AnimeController: UIViewController, UITableViewDelegate, UITableViewDataSou
             }
         }.resume()
     }
-
-
     
+    
+    // fetch the anime detali helper
+    func fetchAnimeDetail(animeID: Int, completion: @escaping (AnimeDetail) -> Void) {
+        let url = URL(string: "http://localhost:8080/anime/\(animeID)")!
+        print("FetchAnimeDetail is called in the AnimeController")
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                print("❌ Failed to fetch AnimeDetail for ID \(animeID)")
+                return
+            }
+
+            do {
+                let decoded = try JSONDecoder().decode(AnimeDetailResponse.self, from: data)
+                DispatchQueue.main.async {
+                    print("✅ Decoded AnimeDetail for \(animeID): \(decoded.data.Media.title.romaji ?? "Unknown")")
+                    completion(decoded.data.Media)
+                }
+            } catch {
+                print("❌ Error decoding AnimeDetail: \(error)")
+            }
+        }.resume()
+    }
+    
+    // function that calls the delete function
+    func deleteFavorite(favoriteId: Int, completion: @escaping () -> Void) {
+        guard let userId = UserDefaults.standard.string(forKey: "userId") else { return }
+
+        let urlString = "http://localhost:8080/users/\(userId)/favorites/\(favoriteId)"
+        guard let url = URL(string: urlString) else {
+            print("❌ Invalid URL for delete")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+
+        URLSession.shared.dataTask(with: request) { _, response, error in
+            if let error = error {
+                print("❌ Failed to delete favorite:", error.localizedDescription)
+                return
+            }
+
+            print("✅ Deleted favorite anime with ID \(favoriteId)")
+            completion()
+        }.resume()
+    }
+
 
     /*
     // MARK: - Navigation

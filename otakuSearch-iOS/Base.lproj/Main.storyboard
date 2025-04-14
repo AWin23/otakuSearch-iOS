@@ -136,7 +136,7 @@
             </objects>
             <point key="canvasLocation" x="1860.3053435114502" y="916.90140845070425"/>
         </scene>
-        <!--Anime-->
+        <!--Anime Controller-->
         <scene sceneID="LVO-yS-ntW">
             <objects>
                 <viewController storyboardIdentifier="AnimeController" id="cyu-x8-feb" customClass="AnimeController" customModule="otakuSearch_iOS" customModuleProvider="target" sceneMemberID="viewController">
@@ -146,11 +146,11 @@
                         <viewLayoutGuide key="safeArea" id="hOP-C1-QAJ"/>
                         <color key="backgroundColor" red="0.1058823529" green="0.098039215690000001" blue="0.098039215690000001" alpha="1" colorSpace="calibratedRGB"/>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Anime" image="tv" catalog="system" id="bWV-7s-poa"/>
+                    <navigationItem key="navigationItem" id="zyi-Cc-OZg"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="eQf-PR-2dW" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="7790" y="806"/>
+            <point key="canvasLocation" x="8715.2671755725187" y="805.63380281690149"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="SvD-D9-PbE">
@@ -166,7 +166,7 @@
                     <connections>
                         <segue destination="OYR-Rf-Dec" kind="relationship" relationship="viewControllers" id="q5l-oV-rGk"/>
                         <segue destination="NRH-Ac-1le" kind="relationship" relationship="viewControllers" id="01G-u5-L5l"/>
-                        <segue destination="cyu-x8-feb" kind="relationship" relationship="viewControllers" id="Cme-zY-MHX"/>
+                        <segue destination="0rc-j1-4h1" kind="relationship" relationship="viewControllers" id="Cme-zY-MHX"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="UpR-EF-omz" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -358,6 +358,25 @@
             </objects>
             <point key="canvasLocation" x="933.58778625954199" y="916.90140845070425"/>
         </scene>
+        <!--Anime-->
+        <scene sceneID="zVY-Vl-BbR">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="0rc-j1-4h1" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="Anime" image="tv" catalog="system" id="bWV-7s-poa"/>
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="n0w-el-1hD">
+                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="cyu-x8-feb" kind="relationship" relationship="rootViewController" id="S2y-Oi-7tv"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="2ZJ-le-Lvy" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="7788.5496183206105" y="805.63380281690149"/>
+        </scene>
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="z8p-fo-uAH"/>
@@ -373,13 +392,13 @@
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
         <systemColor name="systemBlueColor">
-            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGray3Color">
-            <color red="0.78039215689999997" green="0.78039215689999997" blue="0.80000000000000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.7803921568627451" green="0.7803921568627451" blue="0.80000000000000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemPinkColor">
-            <color red="1" green="0.1764705882" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.17647058823529413" blue="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

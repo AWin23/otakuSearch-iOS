@@ -6,6 +6,7 @@
 //
 
 struct FavoriteAnime: Codable {
+    let favoriteId: Int 
     let animeId: Int
     let title: String
     let coverImageUrl: String

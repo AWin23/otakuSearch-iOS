@@ -357,9 +357,7 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         guard let query = searchController.searchBar.text, !query.isEmpty else {
             return
         }
-        
-        print("🔎 User is searching for: \(query)")
-        
+                
         // Cancel previous timer
         searchTimer?.invalidate()
         

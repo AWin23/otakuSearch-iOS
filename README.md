@@ -26,8 +26,7 @@ Welcome to **OtakuSearch** — an anime discovery & curation iOS app built with 
    ```bash
    git clone https://github.com/yourusername/otakuSearch-iOS.git
 
-2. 
-- Open otakuSearch-iOS.xcodeproj in Xcode
+2. Open otakuSearch-iOS.xcodeproj in Xcode
 - Run the app on your simulator or real device
 - Make sure your local Spring Boot backend is running on http://localhost:8080
 

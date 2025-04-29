@@ -4,7 +4,7 @@ Welcome to **OtakuSearch** — an anime discovery & curation iOS app built with 
 
 
 ## Check out a demo of the project below! 🎥
-[![Watch the Demo](https://img.youtube.com/vi/SplMIEHdu0M/maxresdefault.jpg)](https://youtube.com/shorts/SplMIEHdu0M?feature=share)
+[![Watch the Demo](https://img.youtube.com/vi/SplMIEHdu0M/maxresdefault.jpg)](https://youtube.com/shorts/V-PcfQGNlMs?feature=share)
 
 ---
 

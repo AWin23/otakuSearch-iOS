@@ -199,9 +199,9 @@ class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdatin
             }
 
             // ✅ Log the raw JSON response from backend
-            if let jsonString = String(data: data, encoding: .utf8) {
-                print("📜 Raw JSON Response: \(jsonString)")
-            }
+//            if let jsonString = String(data: data, encoding: .utf8) {
+//                print("📜 Raw JSON Response: \(jsonString)")
+//            }
 
             do {
                 // Decode JSON response
@@ -241,7 +241,7 @@ class AnimeSearchResultsViewController: UIViewController, UISearchResultsUpdatin
                     completion(decodedResponse.data.Media)
                 }
             } catch {
-                print("❌ Error decoding anime details: \(error)")
+                print("❌ (Fetch anime detail) Error decoding anime details: \(error)")
             }
         }.resume()
     }

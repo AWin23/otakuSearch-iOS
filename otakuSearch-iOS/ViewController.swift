@@ -569,27 +569,37 @@ extension ViewController: AnimeTableViewCellDelegate {
     func fetchAnimeDetail(animeID: Int, completion: @escaping (AnimeDetail) -> Void) {
         let url = URL(string: "http://localhost:8080/anime/\(animeID)")! // Adjust the URL as needed
         URLSession.shared.dataTask(with: url) { data, response, error in
-            guard let data = data, error == nil else {
-                print("❌ Invalid URL: \(url)")
+            if let error = error {
+                print("❌ Network error: \(error.localizedDescription)")
                 return
             }
-            
+
+            if let httpResponse = response as? HTTPURLResponse {
+                print("🌐 Status Code: \(httpResponse.statusCode)")
+            }
+
+            guard let data = data else {
+                print("❌ No data returned from: \(url)")
+                return
+            }
+
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("📝 Raw JSON Response:\n\(jsonString)")
+            } else {
+                print("⚠️ Could not convert data to UTF-8 string.")
+            }
+
             do {
-                // Decode the fetched data into an AnimeDetail object
                 let decodedResponse = try JSONDecoder().decode(AnimeDetailResponse.self, from: data)
-                
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    print("📝 JSON Response: \(jsonString)")
-                }
-                
+
                 DispatchQueue.main.async {
-                    // Call the completion handler with the AnimeDetail instance
                     print("✅ Successfully decoded AnimeDetail")
                     completion(decodedResponse.data.Media)
                 }
             } catch {
-                print("❌ Error decoding anime details: \(error)")
+                print("❌ Decoding error: \(error)")
             }
         }.resume()
+
     }
 }

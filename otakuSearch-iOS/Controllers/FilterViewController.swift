@@ -536,8 +536,8 @@ class FilterViewController: UIViewController {
                 let resultAnimeArray = decoded.data.Page.media
 
                 // Debug raw JSON (optional)
-                if let rawJSON = String(data: data, encoding: .utf8) {
-                }
+//                if let rawJSON = String(data: data, encoding: .utf8) {
+//                }
 
                 // Dispatch task to update the UI on main thread
                 DispatchQueue.main.async {

@@ -166,9 +166,9 @@ class DiscoveryViewModel {
             }
 
             // ✅ Log the raw JSON response from backend
-            if let jsonString = String(data: data, encoding: .utf8) {
-                print("📜 Raw JSON Response: \(jsonString)")
-            }
+//            if let jsonString = String(data: data, encoding: .utf8) {
+//                print("📜 Raw JSON Response: \(jsonString)")
+//            }
 
             do {
                 let decodedResponse = try JSONDecoder().decode(AnimeSearchAPIResponse.self, from: data)

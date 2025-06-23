@@ -301,6 +301,7 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         table.delegate = self
         table.dataSource = self
         table.register(AnimeTableViewCell.self, forCellReuseIdentifier: AnimeTableViewCell.identifier)
+        table.register(UITableViewCell.self, forCellReuseIdentifier: "EmptyCell") // registering a basic UTTableViewCell for Empty Cells
         table.backgroundColor = .otakuDark // 1B1919 color
         
         // Add the table view to the view hierarchy
@@ -432,60 +433,63 @@ class ViewController: UIViewController, UISearchResultsUpdating, UITableViewDele
         
         
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        // Dequeue a reusable AnimeTableViewCell; fallback to an empty cell if casting fails
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "AnimeTableViewCell", for: indexPath) as? AnimeTableViewCell else {
-            return UITableViewCell()
-        }
-
-        // Set the delegate to handle events from this cell (e.g., anime tapped)
-        cell.delegate = self
-
-        // Define the list of anime that will be passed into the cell
+        // 🧠 Step 1: Determine the list of anime for this cell (either filtered or by section)
         let animeList: [Anime]
 
-        // is filtering == true, toggled when "Apply Filters" button is pressed
         if isFiltering {
-            // 🧠 When filtering is active, convert the filtered anime (FilteredAnime) to the Anime struct expected by the cell
-
+            // 🎯 Filtering is active — convert FilteredAnime objects into the shared Anime model
             animeList = filteredAnime.map {
                 Anime(
                     id: $0.id,
-                    title: AnimeTitle(
-                        romaji: $0.title.romaji,
-                        english: $0.title.english
-                    ),
-                    episodes: $0.episodes ?? 0,                          // Provide fallback if episode count is nil
-                    status: $0.status ?? "Unknown",                      // Provide fallback if status is nil
+                    title: AnimeTitle(romaji: $0.title.romaji, english: $0.title.english),
+                    episodes: $0.episodes ?? 0,        // Default to 0 if nil
+                    status: $0.status ?? "Unknown",    // Default to "Unknown" if nil
                     coverImage: AnimeCoverImage(large: $0.coverImage.large)
                 )
             }
-
-            // 🧪 Optional debug print
-            print("🎯 Showing \(animeList.count) filtered anime")
-            
         } else {
-            // 📦 Default non-filtered data: Pick the correct anime list based on the section
+            // 📦 No filtering — fetch anime list by category based on section index
             switch indexPath.section {
-            case 0:
-                animeList = viewModel.trendingAnime
-            case 1:
-                animeList = viewModel.upcomingAnime
-            case 2:
-                animeList = viewModel.currentPopularAnime
-            case 3:
-                animeList = viewModel.allTimePopularAnime
-            case 4:
-                animeList = viewModel.top100Anime
-            default:
-                animeList = [] // Empty list if section is out of range
+            case 0: animeList = viewModel.trendingAnime
+            case 1: animeList = viewModel.upcomingAnime
+            case 2: animeList = viewModel.currentPopularAnime
+            case 3: animeList = viewModel.allTimePopularAnime
+            case 4: animeList = viewModel.top100Anime
+            default: animeList = [] // Fail-safe: empty list for any unknown section
             }
         }
 
-        // 🎨 Configure the cell with the determined list of anime
-        cell.configure(with: animeList)
+        // 🚫 Step 2: Show empty fallback cell if there’s no data OR the user is offline
+        if animeList.isEmpty || !NetworkMonitor.shared.isConnected {
+            // 🪪 Reuse a basic system cell with a placeholder message
+            // 🎨 Background color and border
+            let emptyCell = tableView.dequeueReusableCell(withIdentifier: "EmptyCell", for: indexPath)
+            emptyCell.backgroundColor = UIColor.otakuDark
+            emptyCell.layer.borderColor = UIColor.otakuPink.cgColor
+            emptyCell.layer.borderWidth = 1.5
+            emptyCell.layer.cornerRadius = 8
+            emptyCell.layer.masksToBounds = true
 
+            // 📝 Label styling
+            emptyCell.textLabel?.text = "No data, please go online"
+            emptyCell.textLabel?.textColor = UIColor.otakuGray
+            emptyCell.textLabel?.textAlignment = .center
+            emptyCell.textLabel?.numberOfLines = 0
+            emptyCell.selectionStyle = .none
+            return emptyCell
+        }
+
+        // ✅ Step 3: Data is available — configure and return a proper AnimeTableViewCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "AnimeTableViewCell", for: indexPath) as? AnimeTableViewCell else {
+            // 🔒 Return a blank fallback if the custom cell cast fails
+            return UITableViewCell()
+        }
+
+        cell.delegate = self // Assign delegate for user interactions
+        cell.configure(with: animeList) // Pass the anime data to the cell's internal collection view
         return cell
     }
+
         
         // Adjust the height of each row for the collection view
         func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

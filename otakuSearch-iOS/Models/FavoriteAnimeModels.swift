@@ -13,6 +13,7 @@ struct FavoriteAnime: Codable {
     
     // Optional Fields as they will be saved to the Core Data
     let description: String?
+    let season: String?
     let episodes: Int?
     let status: String?
     let genres: [String]?

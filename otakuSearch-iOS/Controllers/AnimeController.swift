@@ -393,7 +393,7 @@ class AnimeController: UIViewController, UITableViewDelegate, UITableViewDataSou
                             let decoded = try JSONDecoder().decode(AnimeDetailResponse.self, from: data)
                             let animeDetail = decoded.data.Media
 
-                            //let studioName = animeDetail.studios.edges.first?.node.name
+                            let studioName = animeDetail.studios.edges.first?.node.name
                             
                             DispatchQueue.main.async {
                                 print("✅ Successfully decoded anime detail for ID \(animeID)")
@@ -404,8 +404,9 @@ class AnimeController: UIViewController, UITableViewDelegate, UITableViewDataSou
                                     description: animeDetail.description,
                                     episodes: animeDetail.episodes,
                                     status: animeDetail.status,
-                                    genres: animeDetail.genres
-//                                    studio: animeDetail.studios.edges.first?.node.name
+                                    genres: animeDetail.genres,
+                                    studio: studioName,
+                                    season: animeDetail.season
                                 )
 
                                 completion(animeDetail)

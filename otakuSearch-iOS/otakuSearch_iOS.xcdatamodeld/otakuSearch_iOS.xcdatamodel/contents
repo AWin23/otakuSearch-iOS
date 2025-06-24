@@ -8,6 +8,7 @@
         <attribute name="favoriteId" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="genres" optional="YES" attributeType="String"/>
         <attribute name="isDeletedLocally" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="season" optional="YES" attributeType="String"/>
         <attribute name="status" optional="YES" attributeType="String"/>
         <attribute name="studio" optional="YES" attributeType="String"/>
         <attribute name="title" optional="YES" attributeType="String"/>

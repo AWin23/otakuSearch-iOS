@@ -18,6 +18,7 @@ extension FavoriteAnimeEntity {
         
         // Optional Fields, will be saved into Core Data
         self.animeDescription = favorite.description
+        self.season = favorite.season
         self.episodes = Int16(favorite.episodes ?? 0)
         self.status = favorite.status
         self.studio = favorite.studio
@@ -33,6 +34,7 @@ extension FavoriteAnimeEntity {
             
             // Optional Fields, will be saved into Core Data
             description: self.animeDescription,
+            season: self.season,
             episodes: Int(self.episodes),
             status: self.status ?? "",
             genres: (self.genres ?? "").components(separatedBy: ","),

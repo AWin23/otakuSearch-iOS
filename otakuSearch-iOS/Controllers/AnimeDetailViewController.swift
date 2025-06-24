@@ -421,13 +421,21 @@ class AnimeDetailViewController: UIViewController {
                     episodes: saved.episodes,
                     status: saved.status ?? "Unknown",
                     duration: nil, // Not stored in Core Data
-                    season: nil,   // Not stored in Core Data
+                    season: saved.season,   // Not stored in Core Data
                     favourites: nil, // Not stored in Core Data
                     genres: saved.genres ?? [],
-                    studios: AnimeDetail.StudioContainer(edges: []), // Simplified since we don't store studios offline
+                    studios: AnimeDetail.StudioContainer(
+                        edges: saved.studio != nil ? [
+                            AnimeDetail.StudioEdge(
+                                node: AnimeDetail.Studio(name: saved.studio!)
+                            )
+                        ] : []
+                    ),
                     coverImage: CoverImage(medium: saved.coverImageUrl, large: saved.coverImageUrl)
                 )
                 
+                print("📦 Loaded saved studio from Core Data:", saved.studio ?? "nil")
+
                 // Update the UI with offline data
                 DispatchQueue.main.async {
                     self.title = saved.title

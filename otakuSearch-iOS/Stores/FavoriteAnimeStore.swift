@@ -186,31 +186,46 @@ class FavoriteAnimeStore {
     
     
     
-    // function that enables for saving anime descriptions, status, episodes, etc
-    func updateDetailInfo(animeId: Int, description: String?, episodes: Int?, status: String?, genres: [String]?) {
+    /// Saves additional anime metadata (description, episodes, status, genres, studio) into Core Data.
+    /// This is typically called after fetching anime details from the backend to persist them offline.
+    func updateDetailInfo(
+        animeId: Int,
+        description: String?,
+        episodes: Int?,
+        status: String?,
+        genres: [String]?,
+        studio: String?,
+        season: String?
+    ) {
+        // Create a fetch request to find the FavoriteAnimeEntity matching the given anime ID
         let request: NSFetchRequest<FavoriteAnimeEntity> = FavoriteAnimeEntity.fetchRequest()
         request.predicate = NSPredicate(format: "animeId == %d", animeId)
 
         do {
+            // If a matching entity exists, update its detail fields
             if let entity = try context.fetch(request).first {
-                entity.animeDescription = description
-                entity.episodes = Int16(episodes ?? 0)
-                entity.status = status
-                entity.genres = (genres ?? []).joined(separator: ",")
-                //entity.studio = studio
+                entity.animeDescription = description                        // Save description
+                entity.episodes = Int16(episodes ?? 0)                       // Save episode count (default to 0 if nil)
+                entity.status = status                                       // Save airing status
+                entity.genres = (genres ?? []).joined(separator: ",")       // Save genres as a comma-separated string
+                entity.studio = studio                                       // Save studio name
+                entity.season = season                                       // Save season name
 
-                try context.save()
+                try context.save()                                           // Persist changes to disk
                 print("💾 Core Data updated with detailed info for anime ID \(animeId)")
             } else {
+                // ⚠️ If no existing entity is found, log a warning
                 print("⚠️ No Core Data entry found for anime ID \(animeId)")
             }
         } catch {
+            // ❌ Log if saving fails due to Core Data error
             print("❌ Failed to update detail info:", error)
         }
     }
 
+
     
-    // Replaces the original version that cleared and re-saved Core Data
+    /// Replaces the original version that cleared and re-saved Core Data
     func syncCoreDataWithBackend(_ backendFavorites: [FavoriteAnime]) {
         
         // cal it from favoriteAnime store
@@ -230,7 +245,7 @@ class FavoriteAnimeStore {
             self.cleanUpOrphanedAnimeDetails(existingAnimeIds: existingIds)
 
 
-            // 🧹 Step 1: Delete from backend if anime is marked locally deleted but still exists in backend
+            // Step 1: Delete from backend if anime is marked locally deleted but still exists in backend
             for favorite in backendFavorites {
                 if deletedFavorites.contains(where: { $0.0 == favorite.animeId && $0.1 == favorite.favoriteId }) {
                     print("📡 (From FavoriteAnimeStore) Sending DELETE request to backend for anime ID \(favorite.animeId), favorite ID \(favorite.favoriteId)")
@@ -245,7 +260,7 @@ class FavoriteAnimeStore {
             }
 
 
-            // 🧹 Step 2: Clean up orphaned local entries — anime marked deleted but not found in backend anymore
+            // Step 2: Clean up orphaned local entries — anime marked deleted but not found in backend anymore
             for entity in locallyDeleted {
                 let animeId = Int(entity.animeId)
                 if !backendFavorites.contains(where: { $0.animeId == animeId }) {
@@ -254,7 +269,7 @@ class FavoriteAnimeStore {
                 }
             }
 
-            // ✅ Step 3: Sync backend favorites into Core Data (skip any that are still flagged deleted)
+            // Step 3: Sync backend favorites into Core Data (skip any that are still flagged deleted)
             for favorite in backendFavorites {
                 if let existing = coreDataFavorites.first(where: { Int($0.animeId) == favorite.animeId }) {
                     existing.configure(from: favorite)
@@ -274,36 +289,66 @@ class FavoriteAnimeStore {
         }
     }
     
+    /// Loads detailed Anime info from Core Data for offline viewing.
+    /// Called when the app is offline and a user taps into an anime detail.
     func loadDetailInfo(animeId: Int) -> AnimeDetail? {
+        
+        // Create a Core Data fetch request targeting FavoriteAnimeEntity with the matching anime ID
         let request: NSFetchRequest<FavoriteAnimeEntity> = FavoriteAnimeEntity.fetchRequest()
         request.predicate = NSPredicate(format: "animeId == %d", animeId)
 
         do {
+            // Attempt to fetch the first matching Core Data entity
             if let entity = try context.fetch(request).first {
+                
+                // Construct StudioContainer if the studio name was saved
+                let studioContainer: AnimeDetail.StudioContainer
+                if let savedStudioName = entity.studio, !savedStudioName.isEmpty {
+                    // Wrap the studio name into the nested structure expected by AnimeDetail
+                    let studio = AnimeDetail.Studio(name: savedStudioName)
+                    let edge = AnimeDetail.StudioEdge(node: studio)
+                    studioContainer = AnimeDetail.StudioContainer(edges: [edge])
+                } else {
+                    // No studio available — fallback to an empty edge list
+                    studioContainer = AnimeDetail.StudioContainer(edges: [])
+                }
+
+                // Reconstruct the AnimeDetail object from saved fields
                 return AnimeDetail(
                     id: animeId,
-                    title: AnimeTitle(romaji: entity.title ?? "", english: entity.title ?? ""),
+                    title: AnimeTitle(
+                        romaji: entity.title ?? "",
+                        english: entity.title ?? "" // Use romaji as fallback for English title
+                    ),
                     description: entity.animeDescription,
                     episodes: Int(entity.episodes),
                     status: entity.status ?? "Unknown",
-                    duration: nil,
-                    season: nil,
-                    favourites: nil,
+                    duration: nil,      // Not saved offline
+                    season: entity.season,
+                    favourites: nil,    // Not saved offline
                     genres: (entity.genres ?? "").components(separatedBy: ","),
-                    studios: AnimeDetail.StudioContainer(edges: []),
-                    coverImage: CoverImage(medium: nil, large: entity.coverImageUrl ?? "")
+                    studios: studioContainer,
+                    coverImage: CoverImage(
+                        medium: nil, // Medium not saved; use large only
+                        large: entity.coverImageUrl ?? ""
+                    )
                 )
             }
         } catch {
+            // Log if Core Data retrieval fails
             print("❌ Failed to load detail info from Core Data:", error)
         }
 
+        // 🔙 Return nil if no entry was found or decoding failed
         return nil
     }
+
+
     
     
-    // Function to loop through and clean up orpahned anime details. 
+    /// Function to loop through and clean up orpahned anime details.
     func cleanUpOrphanedAnimeDetails(existingAnimeIds: [Int]) {
+        // Create a Core Data fetch request targeting FavoriteAnimeEntity
         let context = self.context
         let fetchRequest: NSFetchRequest<FavoriteAnimeEntity> = FavoriteAnimeEntity.fetchRequest()
 
